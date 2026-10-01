@@ -1,0 +1,33 @@
+experiment: s1_deeplab_weighted
+model: DeepLabV3-MobileNetV3-Large
+input_channels: [VV, VH]
+pretrained_weights: torchvision DeepLabV3 MobileNetV3 Large default
+input_stem_initialization: mean RGB stem weights repeated to 2 channels and scaled by 1.5
+split: configs/split_v1.yaml
+tile_size: 224
+batch_size: 8
+epochs: 10
+optimizer:
+  name: AdamW
+  backbone_lr: 1.0e-5
+  classifier_lr: 1.0e-4
+  weight_decay: 1.0e-3
+loss:
+  name: CrossEntropyLoss
+  ignore_index: 255
+  class_weights:
+    class_0: 0.243332998497
+    class_1: 0.709198873576
+    class_2: 0.651737877057
+    class_3: 2.395730250869
+sar_preprocessing:
+  units: GAMMA0_TERRAIN dB
+  nodata: -9999
+  align_to: Sentinel-2 B04 grid
+  vv_vh_resampling: bilinear
+  mask_resampling: nearest
+  train_mean: [-22.144847395326, -32.467809385519]
+  train_std: [6.108021880184, 6.304149943967]
+  invalid_policy: fill SAR invalid pixels with train mean, set target to 255
+model_selection: validation macro mIoU
+use_test_set: false

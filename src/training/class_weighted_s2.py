@@ -1,0 +1,274 @@
+from __future__ import annotations
+
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import torch
+from PIL import Image, ImageDraw
+from torch import nn
+from torch.utils.data import DataLoader, Subset
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.data.s2_dataset import S2RGBSegmentationDataset
+from src.evaluation.diagnostics import binary_metrics_from_multiclass
+from src.evaluation.segmentation import segmentation_metrics
+from src.models.deeplab import create_s2_deeplab
+from src.training.train_s2_deeplab import make_loader, run_epoch, seed_everything
+
+
+RESULT_DIR = PROJECT_ROOT / "results" / "s2_deeplab_weighted"
+BASELINE_DIR = PROJECT_ROOT / "results" / "s2_deeplab"
+FIGURE_DIR = PROJECT_ROOT / "figures"
+DOCS_DIR = PROJECT_ROOT / "docs"
+CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
+
+
+def class_counts_for_indices(indices: list[int]) -> dict[str, int]:
+    manifest = pd.read_csv(PROJECT_ROOT / "results" / "tile_manifest.csv")
+    train = manifest[manifest["split"] == "train"].reset_index(drop=True)
+    subset = train.iloc[indices]
+    return {f"class_{klass}": int(subset[f"class_{klass}_count"].sum()) for klass in range(4)}
+
+
+def representative_indices() -> list[int]:
+    manifest = pd.read_csv(PROJECT_ROOT / "results" / "tile_manifest.csv")
+    train = manifest[manifest["split"] == "train"].reset_index(drop=True)
+    selected: list[int] = []
+    for column in ("class_3_count", "class_2_count", "class_1_count", "class_0_count"):
+        for idx in train.sort_values(column, ascending=False).index:
+            if int(idx) not in selected:
+                selected.append(int(idx))
+            if len(selected) >= 16:
+                return selected
+    return selected[:16]
+
+
+def train_class_counts_and_weights() -> tuple[dict[str, int], dict[str, float]]:
+    manifest = pd.read_csv(PROJECT_ROOT / "results" / "tile_manifest.csv")
+    train = manifest[manifest["split"] == "train"]
+    counts = np.array([train[f"class_{klass}_count"].sum() for klass in range(4)], dtype=np.float64)
+    frequencies = counts / counts.sum()
+    weights = 1.0 / np.sqrt(frequencies)
+    weights = weights / weights.mean()
+    return (
+        {f"class_{klass}": int(counts[klass]) for klass in range(4)},
+        {f"class_{klass}": float(weights[klass]) for klass in range(4)},
+    )
+
+
+def train_weighted(weights: dict[str, float]) -> dict[str, object]:
+    os.environ.setdefault("TORCH_HOME", str(PROJECT_ROOT / ".torch"))
+    seed_everything(42)
+    device = torch.device("cuda")
+    train_loader = make_loader(PROJECT_ROOT, "train", batch_size=8, augment=True, shuffle=True)
+    validation_loader = make_loader(PROJECT_ROOT, "validation", batch_size=8)
+    model = create_s2_deeplab(num_classes=4, pretrained=True).to(device)
+    weight_tensor = torch.tensor([weights[f"class_{klass}"] for klass in range(4)], dtype=torch.float32, device=device)
+    criterion = nn.CrossEntropyLoss(ignore_index=255, weight=weight_tensor)
+    optimizer = torch.optim.AdamW(
+        [
+            {"params": model.backbone.parameters(), "lr": 1e-5},
+            {"params": model.classifier.parameters(), "lr": 1e-4},
+        ],
+        weight_decay=1e-3,
+    )
+    RESULT_DIR.mkdir(parents=True, exist_ok=True)
+    CHECKPOINT_DIR.mkdir(exist_ok=True)
+    checkpoint_path = CHECKPOINT_DIR / "s2_deeplab_weighted_best.pt"
+    history = []
+    best_miou = -float("inf")
+    best_epoch = 0
+    start = time.perf_counter()
+    for epoch in range(1, 11):
+        train_metrics, _ = run_epoch(model, train_loader, criterion, device, optimizer=optimizer)
+        validation_metrics, validation_conf = run_epoch(model, validation_loader, criterion, device)
+        row = {"epoch": epoch}
+        row.update({f"train_{key}": value for key, value in train_metrics.items()})
+        row.update({f"validation_{key}": value for key, value in validation_metrics.items()})
+        history.append(row)
+        print(f"weighted epoch={epoch} train_loss={train_metrics['loss']:.4f} val_loss={validation_metrics['loss']:.4f} val_miou={validation_metrics['mean_iou']:.4f}")
+        if validation_metrics["mean_iou"] > best_miou:
+            best_miou = validation_metrics["mean_iou"]
+            best_epoch = epoch
+            torch.save(
+                {
+                    "epoch": epoch,
+                    "model_state_dict": model.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "validation_metrics": validation_metrics,
+                    "validation_confusion_matrix": validation_conf.numpy().tolist(),
+                    "class_weights": weights,
+                },
+                checkpoint_path,
+            )
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+    training_time = time.perf_counter() - start
+    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    unweighted_criterion = nn.CrossEntropyLoss(ignore_index=255)
+    validation_metrics, validation_conf = run_epoch(model, validation_loader, unweighted_criterion, device)
+    pd.DataFrame(history).to_csv(RESULT_DIR / "history.csv", index=False)
+    (RESULT_DIR / "metrics.json").write_text(
+        json.dumps(
+            {
+                "training_time_seconds": training_time,
+                "best_epoch": best_epoch,
+                "best_validation_miou": best_miou,
+                "class_weights": weights,
+                "validation_metrics_unweighted": validation_metrics,
+                "validation_confusion_matrix": validation_conf.numpy().tolist(),
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    return {
+        "model": model,
+        "metrics": validation_metrics,
+        "confusion": validation_conf,
+        "best_epoch": best_epoch,
+        "training_time_seconds": training_time,
+    }
+
+
+def load_baseline_validation() -> dict[str, object]:
+    device = torch.device("cuda")
+    validation_loader = make_loader(PROJECT_ROOT, "validation", batch_size=8)
+    model = create_s2_deeplab(num_classes=4, pretrained=True).to(device)
+    checkpoint = torch.load(CHECKPOINT_DIR / "s2_deeplab_best.pt", map_location=device, weights_only=True)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    criterion = nn.CrossEntropyLoss(ignore_index=255)
+    metrics, conf = run_epoch(model, validation_loader, criterion, device)
+    return {"model": model, "metrics": metrics, "confusion": conf}
+
+
+def binary_metrics(model: torch.nn.Module) -> dict[str, float]:
+    return binary_metrics_from_multiclass(model, torch.device("cuda"))
+
+
+def save_comparison_figure(rows: pd.DataFrame) -> None:
+    canvas = Image.new("RGB", (980, 460), "white")
+    draw = ImageDraw.Draw(canvas)
+    draw.text((24, 18), "Validation: baseline vs class-weighted loss", fill=(0, 0, 0))
+    metrics = [
+        ("mean_iou", "macro mIoU"),
+        ("macro_dice", "macro Dice"),
+        ("iou_background", "IoU 0"),
+        ("iou_low", "IoU 1"),
+        ("iou_mid", "IoU 2"),
+        ("iou_high", "IoU 3"),
+    ]
+    max_value = max(float(rows[column].max()) for column, _ in metrics) or 1.0
+    y = 70
+    for column, label in metrics:
+        draw.text((24, y + 10), label, fill=(0, 0, 0))
+        for idx, experiment in enumerate(("baseline", "weighted")):
+            value = float(rows.loc[rows["experiment"] == experiment, column].iloc[0])
+            width = int(620 * value / max_value)
+            x = 180
+            yy = y + idx * 22
+            color = (80, 130, 210) if experiment == "baseline" else (215, 105, 60)
+            draw.rectangle((x, yy, x + width, yy + 16), fill=color)
+            draw.text((x + width + 8, yy), f"{experiment} {value:.3f}", fill=(0, 0, 0))
+        y += 62
+    canvas.save(FIGURE_DIR / "s2_baseline_vs_weighted.png")
+
+
+def write_doc(payload: dict[str, object]) -> None:
+    comparison = pd.DataFrame(payload["comparison"])
+    original_counts = payload["tiny_original_counts"]
+    representative_counts = payload["tiny_representative_counts"]
+    weights = payload["class_weights"]
+    doc = f"""# Class Imbalance Experiment
+
+Phase 2F keeps the split, model, RGB preprocessing, augmentations, optimizer, learning rates, batch size and 10-epoch budget fixed. The only full-training change is class-weighted `CrossEntropyLoss`.
+
+## Tiny-Subset Inspection
+
+The original Phase 2E first-16-tile subset had pixel counts:
+
+- class 0: `{original_counts['class_0']}`
+- class 1: `{original_counts['class_1']}`
+- class 2: `{original_counts['class_2']}`
+- class 3: `{original_counts['class_3']}`
+
+Because mid/high were poorly represented, a representative 16-tile subset was selected from training tiles with high class counts:
+
+- class 0: `{representative_counts['class_0']}`
+- class 1: `{representative_counts['class_1']}`
+- class 2: `{representative_counts['class_2']}`
+- class 3: `{representative_counts['class_3']}`
+
+This subset was inspected only; it did not change the main experiment.
+
+## Train-Only Class Weights
+
+Inverse-square-root frequency weights, normalized to mean 1:
+
+- class 0: `{weights['class_0']:.4f}`
+- class 1: `{weights['class_1']:.4f}`
+- class 2: `{weights['class_2']:.4f}`
+- class 3: `{weights['class_3']:.4f}`
+
+## Validation Comparison
+
+| Experiment | Macro mIoU | Macro Dice | IoU 0 | IoU 1 | IoU 2 | IoU 3 | Binary algae IoU | Binary algae Dice |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Baseline | {comparison.loc[0, 'mean_iou']:.4f} | {comparison.loc[0, 'macro_dice']:.4f} | {comparison.loc[0, 'iou_background']:.4f} | {comparison.loc[0, 'iou_low']:.4f} | {comparison.loc[0, 'iou_mid']:.4f} | {comparison.loc[0, 'iou_high']:.4f} | {comparison.loc[0, 'binary_algae_iou']:.4f} | {comparison.loc[0, 'binary_algae_dice']:.4f} |
+| Weighted | {comparison.loc[1, 'mean_iou']:.4f} | {comparison.loc[1, 'macro_dice']:.4f} | {comparison.loc[1, 'iou_background']:.4f} | {comparison.loc[1, 'iou_low']:.4f} | {comparison.loc[1, 'iou_mid']:.4f} | {comparison.loc[1, 'iou_high']:.4f} | {comparison.loc[1, 'binary_algae_iou']:.4f} | {comparison.loc[1, 'binary_algae_dice']:.4f} |
+
+## Interpretation
+
+Class weighting is a controlled S2-only intervention. It should be judged on validation only. Test results remain frozen from Phase 2D.
+"""
+    (DOCS_DIR / "CLASS_IMBALANCE_EXPERIMENT.md").write_text(doc, encoding="utf-8")
+
+
+def main() -> None:
+    os.environ.setdefault("TORCH_HOME", str(PROJECT_ROOT / ".torch"))
+    seed_everything(42)
+    RESULT_DIR.mkdir(parents=True, exist_ok=True)
+    FIGURE_DIR.mkdir(exist_ok=True)
+    DOCS_DIR.mkdir(exist_ok=True)
+    original_counts = class_counts_for_indices(list(range(16)))
+    rep_indices = representative_indices()
+    representative_counts = class_counts_for_indices(rep_indices)
+    train_counts, weights = train_class_counts_and_weights()
+    weighted = train_weighted(weights)
+    baseline = load_baseline_validation()
+    baseline_binary = binary_metrics(baseline["model"])
+    weighted_binary = binary_metrics(weighted["model"])
+    comparison = pd.DataFrame(
+        [
+            {"experiment": "baseline", **baseline["metrics"], **baseline_binary},
+            {"experiment": "weighted", **weighted["metrics"], **weighted_binary},
+        ]
+    )
+    comparison.to_csv(RESULT_DIR / "validation_comparison.csv", index=False)
+    save_comparison_figure(comparison)
+    payload = {
+        "train_class_counts": train_counts,
+        "class_weights": weights,
+        "tiny_original_counts": original_counts,
+        "tiny_representative_indices": rep_indices,
+        "tiny_representative_counts": representative_counts,
+        "weighted_best_epoch": weighted["best_epoch"],
+        "weighted_training_time_seconds": weighted["training_time_seconds"],
+        "comparison": comparison.to_dict(orient="records"),
+    }
+    (RESULT_DIR / "class_imbalance_experiment.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    write_doc(payload)
+    print(json.dumps(payload, indent=2))
+
+
+if __name__ == "__main__":
+    main()
+

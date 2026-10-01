@@ -1,0 +1,7 @@
+rasterio==1.5.2
+numpy==2.5.3
+pandas==3.0.6
+pillow==12.3.0
+torch==2.8.0+cu129
+torchvision==0.23.0+cu129
+

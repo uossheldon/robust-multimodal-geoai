@@ -1,0 +1,34 @@
+experiment: s1_s2_modality_dropout
+base_model: DeepLabV3-MobileNetV3-Large early fusion
+input_channels: [B04, B03, B02, VV, VH]
+split: configs/split_v1.yaml
+tile_size: 224
+batch_size: 8
+epochs: 10
+optimizer:
+  name: AdamW
+  backbone_lr: 1.0e-5
+  classifier_lr: 1.0e-4
+  weight_decay: 1.0e-3
+loss:
+  name: CrossEntropyLoss
+  ignore_index: 255
+  class_weights:
+    class_0: 0.243332998497
+    class_1: 0.709198873576
+    class_2: 0.651737877057
+    class_3: 2.395730250869
+training_change:
+  modality_dropout_after_normalization:
+    both_modalities: 0.50
+    zero_s1_channels: 0.25
+    zero_s2_channels: 0.25
+    drop_both: false
+    deterministic_seed: 42
+preprocessing:
+  s2: reflectance divided by 10000, clipped to [0,1], ImageNet normalized
+  s1: VV/VH GAMMA0_TERRAIN dB, train-only mean/std normalized
+  s1_train_mean: [-22.144847395326, -32.467809385519]
+  s1_train_std: [6.108021880184, 6.304149943967]
+model_selection: validation macro mIoU clean input
+use_test_set: false

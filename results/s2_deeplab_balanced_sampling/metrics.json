@@ -1,0 +1,117 @@
+{
+  "training_time_seconds": 211.93879600000218,
+  "best_epoch": 9,
+  "best_validation_miou_during_training": 0.21685285866260529,
+  "validation_metrics": {
+    "pixel_accuracy": 0.5330480337142944,
+    "mean_iou": 0.21685285866260529,
+    "macro_dice": 0.321647047996521,
+    "iou_background": 0.5133206248283386,
+    "iou_low": 0.18451058864593506,
+    "iou_mid": 0.15610314905643463,
+    "iou_high": 0.013477088883519173,
+    "dice_background": 0.6784030199050903,
+    "dice_low": 0.3115389347076416,
+    "dice_mid": 0.2700505554676056,
+    "dice_high": 0.026595745235681534,
+    "loss": 1.1576656723443663
+  },
+  "validation_binary_metrics": {
+    "binary_background_iou": 0.5133206248283386,
+    "binary_algae_iou": 0.3099229633808136,
+    "binary_macro_miou": 0.4116218090057373,
+    "binary_background_dice": 0.6784030199050903,
+    "binary_algae_dice": 0.47319266200065613,
+    "binary_macro_dice": 0.5757978558540344,
+    "binary_confusion_matrix": [
+      [
+        1434975,
+        427399
+      ],
+      [
+        933101,
+        611019
+      ]
+    ]
+  },
+  "validation_prediction_distribution": {
+    "predicted_class_0_count": 2368076,
+    "predicted_class_1_count": 656618,
+    "predicted_class_2_count": 351070,
+    "predicted_class_3_count": 30730,
+    "predicted_class_0_fraction": 0.695165175690901,
+    "predicted_class_1_fraction": 0.1927547795475348,
+    "predicted_class_2_fraction": 0.10305903958732937,
+    "predicted_class_3_fraction": 0.009021005174234858
+  },
+  "validation_confusion_matrix": [
+    [
+      1434975,
+      309271,
+      101608,
+      16520
+    ],
+    [
+      856219,
+      311469,
+      164100,
+      11145
+    ],
+    [
+      59848,
+      24959,
+      68361,
+      2045
+    ],
+    [
+      17034,
+      10919,
+      17001,
+      1020
+    ]
+  ],
+  "peak_gpu_memory_mb": 418.4423828125,
+  "strata_thresholds": {
+    "min_algae_fraction": 0.01,
+    "min_algae_pixels": 128,
+    "max_sampler_weight_ratio": 4.0
+  },
+  "strata_summary": [
+    {
+      "stratum": "background/no algae",
+      "tile_count": 216,
+      "raw_inverse_sqrt_weight": 0.06804138174397717,
+      "normalized_weight": 0.78944286575416,
+      "sampler_weight_capped": 0.78944286575416,
+      "expected_fraction_before_sampling": 0.34782608695652173,
+      "expected_fraction_after_sampling": 0.30080214097022406
+    },
+    {
+      "stratum": "low",
+      "tile_count": 66,
+      "raw_inverse_sqrt_weight": 0.12309149097933272,
+      "normalized_weight": 1.4281558795251583,
+      "sampler_weight_capped": 1.4281558795251583,
+      "expected_fraction_before_sampling": 0.10628019323671498,
+      "expected_fraction_after_sampling": 0.16627463962230413
+    },
+    {
+      "stratum": "mid",
+      "tile_count": 168,
+      "raw_inverse_sqrt_weight": 0.07715167498104596,
+      "normalized_weight": 0.8951440701769957,
+      "sampler_weight_capped": 0.8951440701769957,
+      "expected_fraction_before_sampling": 0.27053140096618356,
+      "expected_fraction_after_sampling": 0.2652825529476687
+    },
+    {
+      "stratum": "high",
+      "tile_count": 171,
+      "raw_inverse_sqrt_weight": 0.07647191129018725,
+      "normalized_weight": 0.8872571845436859,
+      "sampler_weight_capped": 0.8872571845436859,
+      "expected_fraction_before_sampling": 0.2753623188405797,
+      "expected_fraction_after_sampling": 0.267640666459803
+    }
+  ]
+}

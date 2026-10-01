@@ -1,0 +1,73 @@
+{
+  "validation_metrics": {
+    "pixel_accuracy": 0.5687161684036255,
+    "mean_iou": 0.29052793979644775,
+    "macro_dice": 0.43371710181236267,
+    "iou_background": 0.4510708451271057,
+    "iou_low": 0.391523152589798,
+    "iou_mid": 0.17469759285449982,
+    "iou_high": 0.14482013881206512,
+    "dice_background": 0.621707558631897,
+    "dice_low": 0.5627260208129883,
+    "dice_mid": 0.29743415117263794,
+    "dice_high": 0.2530006766319275,
+    "loss": 1.033413322609746
+  },
+  "validation_binary_metrics": {
+    "binary_background_iou": 0.4510708451271057,
+    "binary_algae_iou": 0.4771355092525482,
+    "binary_macro_miou": 0.46410316228866577,
+    "binary_background_dice": 0.621707558631897,
+    "binary_algae_dice": 0.6460281014442444,
+    "binary_macro_dice": 0.6338678598403931,
+    "binary_confusion_matrix": [
+      [
+        891514,
+        744790
+      ],
+      [
+        340135,
+        990039
+      ]
+    ]
+  },
+  "validation_prediction_distribution": {
+    "predicted_class_0_count": 1231649,
+    "predicted_class_1_count": 1417958,
+    "predicted_class_2_count": 291663,
+    "predicted_class_3_count": 25208,
+    "predicted_class_0_fraction": 0.4151889884233087,
+    "predicted_class_1_fraction": 0.4779937690419413,
+    "predicted_class_2_fraction": 0.09831962347268376,
+    "predicted_class_3_fraction": 0.008497619062066194
+  },
+  "validation_confusion_matrix": [
+    [
+      891514,
+      664336,
+      73202,
+      7252
+    ],
+    [
+      285808,
+      723812,
+      141999,
+      2943
+    ],
+    [
+      41374,
+      22824,
+      63316,
+      6571
+    ],
+    [
+      12953,
+      6986,
+      13146,
+      8442
+    ]
+  ],
+  "best_epoch": 6,
+  "training_time_seconds": 389.004861399997,
+  "peak_gpu_memory_mb": 422.2880859375
+}

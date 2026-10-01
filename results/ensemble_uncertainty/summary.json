@@ -1,0 +1,272 @@
+{
+  "conditions": [
+    "clean",
+    "occlusion_30",
+    "occlusion_50",
+    "occlusion_70",
+    "missing_s1_zero",
+    "missing_s2_zero"
+  ],
+  "metrics": [
+    {
+      "condition": "clean",
+      "macro_miou": 0.2759537696838379,
+      "macro_dice": 0.4215933084487915,
+      "iou_0": 0.3912469148635864,
+      "iou_1": 0.3714689612388611,
+      "iou_2": 0.18578188121318817,
+      "iou_3": 0.1553173065185547,
+      "nll": 1.0680067378994043,
+      "brier": 0.6435511287978218,
+      "ece": 0.1756554303731367,
+      "predictive_entropy": 0.6977975964546204,
+      "mean_individual_entropy": 0.653320848941803,
+      "mutual_information": 0.044476743787527084,
+      "disagreement": 0.02522452548146248,
+      "entropy_correct": 0.678002119064331,
+      "entropy_incorrect": 0.7203673124313354,
+      "valid_pixels": 2966478
+    },
+    {
+      "condition": "occlusion_30",
+      "macro_miou": 0.2898141145706177,
+      "macro_dice": 0.4326200783252716,
+      "iou_0": 0.4621453881263733,
+      "iou_1": 0.3724477291107178,
+      "iou_2": 0.1969624012708664,
+      "iou_3": 0.12770095467567444,
+      "nll": 0.9498732673396822,
+      "brier": 0.5732038799038511,
+      "ece": 0.13230000810349268,
+      "predictive_entropy": 0.7003669738769531,
+      "mean_individual_entropy": 0.6542485952377319,
+      "mutual_information": 0.046118393540382385,
+      "disagreement": 0.028499679639935493,
+      "entropy_correct": 0.6654568910598755,
+      "entropy_incorrect": 0.7468557953834534,
+      "valid_pixels": 2966478
+    },
+    {
+      "condition": "occlusion_50",
+      "macro_miou": 0.2738012671470642,
+      "macro_dice": 0.41401323676109314,
+      "iou_0": 0.4418122470378876,
+      "iou_1": 0.34759852290153503,
+      "iou_2": 0.18768663704395294,
+      "iou_3": 0.11810769140720367,
+      "nll": 0.9450240143421046,
+      "brier": 0.5812429756717163,
+      "ece": 0.13631536020639334,
+      "predictive_entropy": 0.7400742769241333,
+      "mean_individual_entropy": 0.6749050617218018,
+      "mutual_information": 0.06516915559768677,
+      "disagreement": 0.041325636208057404,
+      "entropy_correct": 0.7090203166007996,
+      "entropy_incorrect": 0.7781074047088623,
+      "valid_pixels": 2966478
+    },
+    {
+      "condition": "occlusion_70",
+      "macro_miou": 0.2607254385948181,
+      "macro_dice": 0.3938975930213928,
+      "iou_0": 0.45610207319259644,
+      "iou_1": 0.3346153795719147,
+      "iou_2": 0.11736658960580826,
+      "iou_3": 0.13481765985488892,
+      "nll": 0.932100750347468,
+      "brier": 0.5634978344269159,
+      "ece": 0.10719687001280694,
+      "predictive_entropy": 0.7844069600105286,
+      "mean_individual_entropy": 0.7248468399047852,
+      "mutual_information": 0.059560175985097885,
+      "disagreement": 0.038626451045274734,
+      "entropy_correct": 0.7544525861740112,
+      "entropy_incorrect": 0.8212433457374573,
+      "valid_pixels": 2966478
+    },
+    {
+      "condition": "missing_s1_zero",
+      "macro_miou": 0.18178682029247284,
+      "macro_dice": 0.2934332489967346,
+      "iou_0": 0.16174279153347015,
+      "iou_1": 0.3713940382003784,
+      "iou_2": 0.10126026719808578,
+      "iou_3": 0.0927501916885376,
+      "nll": 1.2588184760138352,
+      "brier": 0.7272412857364561,
+      "ece": 0.17302150144190545,
+      "predictive_entropy": 1.0038241147994995,
+      "mean_individual_entropy": 0.9377065896987915,
+      "mutual_information": 0.06611746549606323,
+      "disagreement": 0.03616354241967201,
+      "entropy_correct": 0.989275336265564,
+      "entropy_incorrect": 1.0132513046264648,
+      "valid_pixels": 2966478
+    },
+    {
+      "condition": "missing_s2_zero",
+      "macro_miou": 0.2192620038986206,
+      "macro_dice": 0.3378811478614807,
+      "iou_0": 0.4022558927536011,
+      "iou_1": 0.29768094420433044,
+      "iou_2": 0.043176475912332535,
+      "iou_3": 0.1339346468448639,
+      "nll": 1.0610582348482873,
+      "brier": 0.6330890581905647,
+      "ece": 0.12305375269136336,
+      "predictive_entropy": 0.8810621500015259,
+      "mean_individual_entropy": 0.7871630787849426,
+      "mutual_information": 0.09389904141426086,
+      "disagreement": 0.060426704585552216,
+      "entropy_correct": 0.8445354104042053,
+      "entropy_incorrect": 0.9166306257247925,
+      "valid_pixels": 2966478
+    }
+  ],
+  "error_detection": [
+    {
+      "condition": "clean",
+      "uncertainty": "single_entropy",
+      "auroc": 0.5418450992729966,
+      "risk_auc": 0.44123321231007645
+    },
+    {
+      "condition": "clean",
+      "uncertainty": "ensemble_entropy",
+      "auroc": 0.5354738342537144,
+      "risk_auc": 0.4402884746948281
+    },
+    {
+      "condition": "clean",
+      "uncertainty": "mutual_information",
+      "auroc": 0.5357320158936695,
+      "risk_auc": 0.4492198553311121
+    },
+    {
+      "condition": "clean",
+      "uncertainty": "disagreement",
+      "auroc": 0.5472300687635527,
+      "risk_auc": 0.4379015070518089
+    },
+    {
+      "condition": "occlusion_30",
+      "uncertainty": "single_entropy",
+      "auroc": 0.5781804289207628,
+      "risk_auc": 0.37572309018769345
+    },
+    {
+      "condition": "occlusion_30",
+      "uncertainty": "ensemble_entropy",
+      "auroc": 0.5797161934034208,
+      "risk_auc": 0.3775596169851932
+    },
+    {
+      "condition": "occlusion_30",
+      "uncertainty": "mutual_information",
+      "auroc": 0.5487238157144773,
+      "risk_auc": 0.39847077166482114
+    },
+    {
+      "condition": "occlusion_30",
+      "uncertainty": "disagreement",
+      "auroc": 0.5813606771719708,
+      "risk_auc": 0.37061974112386553
+    },
+    {
+      "condition": "occlusion_50",
+      "uncertainty": "single_entropy",
+      "auroc": 0.5441687641388837,
+      "risk_auc": 0.4305925204283818
+    },
+    {
+      "condition": "occlusion_50",
+      "uncertainty": "ensemble_entropy",
+      "auroc": 0.5661530335698522,
+      "risk_auc": 0.4089946484819537
+    },
+    {
+      "condition": "occlusion_50",
+      "uncertainty": "mutual_information",
+      "auroc": 0.6080152053294304,
+      "risk_auc": 0.37520186659896265
+    },
+    {
+      "condition": "occlusion_50",
+      "uncertainty": "disagreement",
+      "auroc": 0.6140247980674628,
+      "risk_auc": 0.36765581143568676
+    },
+    {
+      "condition": "occlusion_70",
+      "uncertainty": "single_entropy",
+      "auroc": 0.5606639235507715,
+      "risk_auc": 0.4020669788907271
+    },
+    {
+      "condition": "occlusion_70",
+      "uncertainty": "ensemble_entropy",
+      "auroc": 0.5728421487296681,
+      "risk_auc": 0.39614395364759014
+    },
+    {
+      "condition": "occlusion_70",
+      "uncertainty": "mutual_information",
+      "auroc": 0.5890981492512061,
+      "risk_auc": 0.385249941142731
+    },
+    {
+      "condition": "occlusion_70",
+      "uncertainty": "disagreement",
+      "auroc": 0.5983911650001578,
+      "risk_auc": 0.3778713528256505
+    },
+    {
+      "condition": "missing_s1_zero",
+      "uncertainty": "single_entropy",
+      "auroc": 0.6142478917806975,
+      "risk_auc": 0.5414203559272805
+    },
+    {
+      "condition": "missing_s1_zero",
+      "uncertainty": "ensemble_entropy",
+      "auroc": 0.5384242476104751,
+      "risk_auc": 0.5899336226964358
+    },
+    {
+      "condition": "missing_s1_zero",
+      "uncertainty": "mutual_information",
+      "auroc": 0.38269354276439727,
+      "risk_auc": 0.6839087433288848
+    },
+    {
+      "condition": "missing_s1_zero",
+      "uncertainty": "disagreement",
+      "auroc": 0.38968152439104975,
+      "risk_auc": 0.6802424679481055
+    },
+    {
+      "condition": "missing_s2_zero",
+      "uncertainty": "single_entropy",
+      "auroc": 0.6016431585262074,
+      "risk_auc": 0.44420658668300117
+    },
+    {
+      "condition": "missing_s2_zero",
+      "uncertainty": "ensemble_entropy",
+      "auroc": 0.5944116725748292,
+      "risk_auc": 0.45076020501334013
+    },
+    {
+      "condition": "missing_s2_zero",
+      "uncertainty": "mutual_information",
+      "auroc": 0.533454651479407,
+      "risk_auc": 0.47873652228392294
+    },
+    {
+      "condition": "missing_s2_zero",
+      "uncertainty": "disagreement",
+      "auroc": 0.5401661816902116,
+      "risk_auc": 0.4744075485756719
+    }
+  ]
+}

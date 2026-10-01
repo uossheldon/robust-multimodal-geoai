@@ -1,0 +1,161 @@
+{
+  "training_time_seconds": 277.09628559998237,
+  "best_epoch": 4,
+  "best_validation_miou_during_training": 0.23491951823234558,
+  "peak_gpu_memory_mb": 414.470703125,
+  "sar_statistics": {
+    "channels": [
+      "VV",
+      "VH"
+    ],
+    "mean": [
+      -22.144847395326458,
+      -32.46780938551886
+    ],
+    "std": [
+      6.10802188018391,
+      6.304149943967114
+    ],
+    "valid_pixel_counts": [
+      21730003,
+      21730003
+    ],
+    "source": "train split valid pixels only; mask 255, SAR nodata -9999 and non-finite pixels excluded"
+  },
+  "train_class_counts": {
+    "class_0": 17144819,
+    "class_1": 2018361,
+    "class_2": 2389951,
+    "class_3": 176872
+  },
+  "class_weights": {
+    "class_0": 0.24333299849743195,
+    "class_1": 0.7091988735762668,
+    "class_2": 0.6517378770569545,
+    "class_3": 2.395730250869347
+  },
+  "smoke_test": {
+    "input_shape": [
+      8,
+      2,
+      224,
+      224
+    ],
+    "target_shape": [
+      8,
+      224,
+      224
+    ],
+    "logit_shape": [
+      8,
+      4,
+      224,
+      224
+    ],
+    "loss": 1.518588900566101,
+    "loss_finite": true,
+    "cuda_used": true
+  },
+  "validation_metrics": {
+    "pixel_accuracy": 0.5510247945785522,
+    "mean_iou": 0.23491951823234558,
+    "macro_dice": 0.34970271587371826,
+    "iou_background": 0.45189374685287476,
+    "iou_low": 0.33403313159942627,
+    "iou_mid": 0.021033428609371185,
+    "iou_high": 0.13271774351596832,
+    "dice_background": 0.6224887371063232,
+    "dice_low": 0.5007868409156799,
+    "dice_mid": 0.04120027646422386,
+    "dice_high": 0.2343350648880005,
+    "loss": 1.1616603405835264
+  },
+  "validation_binary_metrics": {
+    "binary_background_iou": 0.45189374685287476,
+    "binary_algae_iou": 0.3401576280593872,
+    "binary_macro_miou": 0.396025687456131,
+    "binary_background_dice": 0.6224887371063232,
+    "binary_algae_dice": 0.5076382160186768,
+    "binary_macro_dice": 0.5650634765625,
+    "binary_confusion_matrix": [
+      [
+        1045204,
+        591100
+      ],
+      [
+        676638,
+        653536
+      ]
+    ]
+  },
+  "validation_prediction_distribution": {
+    "predicted_class_0_count": 1721842,
+    "predicted_class_1_count": 1133645,
+    "predicted_class_2_count": 43341,
+    "predicted_class_3_count": 67650,
+    "predicted_class_0_fraction": 0.5804330927112893,
+    "predicted_class_1_fraction": 0.38215183122881746,
+    "predicted_class_2_fraction": 0.014610254989249878,
+    "predicted_class_3_fraction": 0.02280482107064337
+  },
+  "validation_confusion_matrix": [
+    [
+      1045204,
+      525489,
+      35056,
+      30555
+    ],
+    [
+      567527,
+      572952,
+      3658,
+      10425
+    ],
+    [
+      88407,
+      28145,
+      3655,
+      13878
+    ],
+    [
+      20704,
+      7059,
+      972,
+      12792
+    ]
+  ],
+  "s2_weighted_validation_metrics": {
+    "mean_iou": 0.2274367362260818,
+    "macro_dice": 0.3497128784656524,
+    "iou_background": 0.4229185879230499,
+    "iou_low": 0.2617058753967285,
+    "iou_mid": 0.1845677196979522,
+    "iou_high": 0.0405548103153705,
+    "binary_algae_iou": 0.3883777260780334,
+    "binary_algae_dice": 0.5594698190689087
+  },
+  "validation_comparison": [
+    {
+      "experiment": "s2_weighted",
+      "mean_iou": 0.2274367362260818,
+      "macro_dice": 0.3497128784656524,
+      "iou_background": 0.4229185879230499,
+      "iou_low": 0.2617058753967285,
+      "iou_mid": 0.1845677196979522,
+      "iou_high": 0.0405548103153705,
+      "binary_algae_iou": 0.3883777260780334,
+      "binary_algae_dice": 0.5594698190689087
+    },
+    {
+      "experiment": "s1_weighted",
+      "mean_iou": 0.23491951823234558,
+      "macro_dice": 0.34970271587371826,
+      "iou_background": 0.45189374685287476,
+      "iou_low": 0.33403313159942627,
+      "iou_mid": 0.021033428609371185,
+      "iou_high": 0.13271774351596832,
+      "binary_algae_iou": 0.3401576280593872,
+      "binary_algae_dice": 0.5076382160186768
+    }
+  ]
+}

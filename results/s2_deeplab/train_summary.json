@@ -1,0 +1,28 @@
+{
+  "training_time_seconds": 210.56345339999825,
+  "best_epoch": 8,
+  "peak_gpu_memory": 438768640,
+  "best_validation_miou": 0.2189127802848816,
+  "batch_size": 8,
+  "epochs": 10,
+  "optimizer": "AdamW",
+  "backbone_lr": 1e-05,
+  "classifier_lr": 0.0001,
+  "weight_decay": 0.001,
+  "scheduler": null,
+  "augmentation": "train-only random horizontal flip, vertical flip, and 0/90/180/270 rotation",
+  "test": {
+    "pixel_accuracy": 0.4448102116584778,
+    "mean_iou": 0.15764708817005157,
+    "macro_dice": 0.2251405417919159,
+    "iou_background": 0.5138405561447144,
+    "iou_low": 0.05377236008644104,
+    "iou_mid": 0.0574471540749073,
+    "iou_high": 0.00552832568064332,
+    "dice_background": 0.6788569092750549,
+    "dice_low": 0.10205688327550888,
+    "dice_mid": 0.10865253210067749,
+    "dice_high": 0.010995862074196339,
+    "loss": 1.583279386040779
+  }
+}

@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local environment files and secrets
+.env
+.env.*
+*.pem
+*.key
+*.token
+*credentials*
+*secret*
+
+# Raw data, archives, and derived raster arrays
+data/raw/
+data/interim/
+data/processed/
+data/external/
+**/SummerSchool_Subset/
+SummerSchool_Subset.zip
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.tif
+*.tiff
+*.vrt
+*.npy
+*.npz
+
+# Model checkpoints and caches
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+.torch/
+.cache/
+model_cache/
+hf_cache/
+huggingface/
+**/.cache/
+**/model_cache/
+**/huggingface/
+
+# Google Drive / Colab temporary data
+colab_outputs/
+/content/
+drive/
+MyDrive/
+*.tmp
+*.temp
+*.log
+
+# Keep small documented experiment outputs and figures in Git by default.
+# Add specific large generated artifacts here if needed after size audit.
+results/**/events.out.tfevents*
+results/**/*.pt
+results/**/*.pth
+figures/**/*.psd
+figures/**/*.ai
+figures/**/*.tif
+figures/**/*.tiff
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

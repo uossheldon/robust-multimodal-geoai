@@ -1,0 +1,55 @@
+experiment: terramind_frozen
+model: terramind_v1_tiny
+backbone: frozen
+modalities: [RGB, S1RTC]
+merge_method: mean
+split: configs/split_v1.yaml
+manifest: results/tile_manifest.csv
+expected_tiles:
+  train: 621
+  validation: 111
+excluded_test_dates: [2025-09-08, 2025-09-21]
+tile_size: 224
+num_classes: 4
+ignore_index: 255
+batch_size: 4
+epochs: 10
+seed: 42
+mixed_precision: true
+optimizer:
+  name: AdamW
+  trainable_parameters: decoder_only
+  lr: 1.0e-3
+  weight_decay: 1.0e-3
+loss:
+  name: CrossEntropyLoss
+  ignore_index: 255
+  class_weights_source: selected_weighted_deeplab_experiments
+  class_weights:
+    class_0: 0.243332998497
+    class_1: 0.709198873576
+    class_2: 0.651737877057
+    class_3: 2.395730250869
+preprocessing:
+  rgb:
+    bands: [B04, B03, B02]
+    scale: divide_by_10000
+    clip: [0, 1]
+    terramind_order: BGR
+    terramind_scale: multiply_by_255
+  s1rtc:
+    bands: [VV, VH]
+    units: GAMMA0_TERRAIN_dB
+    nodata: -9999
+    alignment: B04 reference grid with bilinear resampling
+    mean: [-10.930, -17.329]
+    std: [4.391, 4.459]
+  masks:
+    alignment: B04 reference grid with nearest-neighbour resampling only
+decoder:
+  input: last_terramind_feature
+  feature_shape: [B, 196, 192]
+  reshape: [B, 192, 14, 14]
+  output: [B, 4, 224, 224]
+model_selection: validation macro mIoU
+use_test_set: false

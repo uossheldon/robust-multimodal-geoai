@@ -1,0 +1,53 @@
+{
+  "torch": "2.8.0+cu129",
+  "cuda_runtime": "12.9",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "gpu_memory_total": 8585216000,
+  "peak_gpu_memory": 247331328,
+  "train_tiles": 8,
+  "validation_tiles": 4,
+  "history": [
+    {
+      "epoch": 1,
+      "train": {
+        "pixel_accuracy": 0.32649680972099304,
+        "mean_iou": 0.1456339955329895,
+        "iou_background": 0.22707389295101166,
+        "iou_low": 0.315377414226532,
+        "iou_mid": 0.027425741776823997,
+        "iou_high": 0.01265890896320343,
+        "loss": 1.341465153762061
+      },
+      "validation": {
+        "pixel_accuracy": 0.5562503933906555,
+        "mean_iou": 0.13906259834766388,
+        "iou_background": 0.0,
+        "iou_low": 0.5562503933906555,
+        "iou_mid": 0.0,
+        "iou_high": 0.0,
+        "loss": 1.3158750380495374
+      }
+    },
+    {
+      "epoch": 2,
+      "train": {
+        "pixel_accuracy": 0.6684464812278748,
+        "mean_iou": 0.29111677408218384,
+        "iou_background": 0.4750659465789795,
+        "iou_low": 0.6431533098220825,
+        "iou_mid": 0.025145329535007477,
+        "iou_high": 0.021102458238601685,
+        "loss": 1.0731756439852849
+      },
+      "validation": {
+        "pixel_accuracy": 0.5562503933906555,
+        "mean_iou": 0.13906259834766388,
+        "iou_background": 0.0,
+        "iou_low": 0.5562503933906555,
+        "iou_mid": 0.0,
+        "iou_high": 0.0,
+        "loss": 1.2792865526782469
+      }
+    }
+  ]
+}

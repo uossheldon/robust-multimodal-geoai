@@ -1,0 +1,4 @@
+method,macro_miou_auc_0_70
+original,0.10155785822915647
+modality_dropout,0.19117206618899388
+occlusion_training,0.2646323898954997
