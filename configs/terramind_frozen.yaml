@@ -5,6 +5,8 @@ modalities: [RGB, S1RTC]
 merge_method: mean
 split: configs/split_v1.yaml
 manifest: results/tile_manifest.csv
+default_data_root: data/raw/SummerSchool_Subset
+colab_data_root: /content/geoai_data/SummerSchool_Subset
 expected_tiles:
   train: 621
   validation: 111
@@ -53,3 +55,4 @@ decoder:
   output: [B, 4, 224, 224]
 model_selection: validation macro mIoU
 use_test_set: false
+

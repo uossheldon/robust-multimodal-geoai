@@ -123,3 +123,8 @@ This local Windows environment was not used for TerraMind training because the v
 - The smoke test does not step the optimizer or alter weights before the timed training run.
 
 
+
+## Portability note
+
+The TerraMind dataset reconstructs raster paths from the acquisition date under a configurable data_root. On Colab, run with --data-root /content/geoai_data/SummerSchool_Subset so the manifest keeps its split/window metadata without relying on Windows-style source path strings.
+

@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.data.terramind_dataset import TerraMindMultimodalDataset, terramind_collate
+from src.data.terramind_dataset import TerraMindMultimodalDataset, default_terramind_data_root, terramind_collate
 from src.evaluation.segmentation import confusion_matrix, segmentation_metrics
 from src.models.terramind_segmentation import create_terramind_frozen_segmenter
 from src.training.train_s1_deeplab import color_mask, stretch_channel
@@ -92,8 +92,8 @@ def validate_manifest_protocol() -> dict[str, object]:
         "mask_values_observed_train_validation": sorted(observed_mask_values),
     }
 
-def make_loader(split: str, *, batch_size: int, augment: bool = False, shuffle: bool = False) -> DataLoader:
-    dataset = TerraMindMultimodalDataset(MANIFEST_PATH, project_root=PROJECT_ROOT, split=split, augment=augment)
+def make_loader(split: str, *, batch_size: int, data_root: str | Path | None = None, augment: bool = False, shuffle: bool = False) -> DataLoader:
+    dataset = TerraMindMultimodalDataset(MANIFEST_PATH, project_root=PROJECT_ROOT, split=split, data_root=data_root, augment=augment)
     generator = torch.Generator().manual_seed(42)
     return DataLoader(
         dataset,
@@ -358,7 +358,7 @@ def evaluate_for_binary_metrics(model: nn.Module, loader: DataLoader, device: to
     return {"binary_algae_iou": float(iou[1].item()), "binary_algae_dice": float(dice[1].item())}
 
 
-def train_full(batch_size: int = 4, epochs: int = 10, seed: int = 42, use_class_weights: bool = True) -> dict[str, object]:
+def train_full(batch_size: int = 4, epochs: int = 10, seed: int = 42, use_class_weights: bool = True, data_root: str | Path | None = None) -> dict[str, object]:
     os.environ.setdefault("TORCH_HOME", str(PROJECT_ROOT / ".torch"))
     seed_everything(seed)
     for directory in (RESULT_DIR, FIGURE_DIR, CHECKPOINT_DIR):
@@ -369,10 +369,11 @@ def train_full(batch_size: int = 4, epochs: int = 10, seed: int = 42, use_class_
     torch.cuda.reset_peak_memory_stats(device)
 
     protocol = validate_manifest_protocol()
+    resolved_data_root = Path(data_root) if data_root is not None else default_terramind_data_root(PROJECT_ROOT)
     train_counts, weights = train_class_weights()
     class_weight_tensor = torch.tensor([weights[f"class_{klass}"] for klass in range(4)], dtype=torch.float32, device=device) if use_class_weights else None
-    train_loader = make_loader("train", batch_size=batch_size, augment=True, shuffle=True)
-    validation_loader = make_loader("validation", batch_size=batch_size, augment=False, shuffle=False)
+    train_loader = make_loader("train", batch_size=batch_size, data_root=resolved_data_root, augment=True, shuffle=True)
+    validation_loader = make_loader("validation", batch_size=batch_size, data_root=resolved_data_root, augment=False, shuffle=False)
 
     model = create_terramind_frozen_segmenter(num_classes=4).to(device)
     criterion = nn.CrossEntropyLoss(ignore_index=255, weight=class_weight_tensor)
@@ -452,6 +453,7 @@ def train_full(batch_size: int = 4, epochs: int = 10, seed: int = 42, use_class_
         "epochs": epochs,
         "seed": seed,
         "use_class_weights": use_class_weights,
+        "data_root": str(resolved_data_root),
         "manifest_protocol": protocol,
         "train_class_counts": train_counts,
         "class_weights": weights if use_class_weights else None,
@@ -469,6 +471,7 @@ def train_full(batch_size: int = 4, epochs: int = 10, seed: int = 42, use_class_
         "loss": "CrossEntropyLoss(ignore_index=255) with locked selected DeepLab inverse-square-root class weights" if use_class_weights else "CrossEntropyLoss(ignore_index=255)",
         "model_selection": "validation macro mIoU",
         "test_evaluated": False,
+        "data_root": str(resolved_data_root),
         "checkpoint": str(checkpoint_path.relative_to(PROJECT_ROOT)),
     }, indent=2), encoding="utf-8")
     print(json.dumps(payload, indent=2))
@@ -477,5 +480,9 @@ def train_full(batch_size: int = 4, epochs: int = 10, seed: int = 42, use_class_
 
 if __name__ == "__main__":
     train_full()
+
+
+
+
 
 

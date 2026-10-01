@@ -59,13 +59,13 @@ fi
 
 ```bash
 cd /content/robust-multimodal-geoai
-mkdir -p data/raw
-cp /content/drive/MyDrive/robust-multimodal-geoai/data/SummerSchool_Subset.zip data/raw/SummerSchool_Subset.zip
+mkdir -p /content/geoai_data
+cp /content/drive/MyDrive/robust-multimodal-geoai/data/SummerSchool_Subset.zip /content/geoai_data/SummerSchool_Subset.zip
 python - <<'PY'
 from pathlib import Path
 from zipfile import ZipFile
-archive = Path('data/raw/SummerSchool_Subset.zip')
-out = Path('data/raw/SummerSchool_Subset')
+archive = Path('/content/geoai_data/SummerSchool_Subset.zip')
+out = Path('/content/geoai_data/SummerSchool_Subset')
 out.mkdir(parents=True, exist_ok=True)
 with ZipFile(archive) as zf:
     zf.extractall(out)
@@ -73,13 +73,13 @@ print('extracted', out)
 PY
 ```
 
-The runner reads rasters from `/content/robust-multimodal-geoai/data/raw/...`, not directly from Drive.
+The runner reads rasters from `/content/geoai_data/SummerSchool_Subset`, not directly from Drive and not from Windows-style manifest paths.
 
 ## 6. Smoke test and train
 
 ```bash
 cd /content/robust-multimodal-geoai
-python scripts/run_terramind.py --batch-size 4 --epochs 10
+python scripts/run_terramind.py --batch-size 4 --epochs 10 --data-root /content/geoai_data/SummerSchool_Subset
 ```
 
 The built-in smoke test verifies:
@@ -111,3 +111,4 @@ cp figures/terramind_*.png /content/drive/MyDrive/robust-multimodal-geoai/colab_
 ## 8. Test-date policy
 
 Do not evaluate test dates in Phase 6C. The runner only constructs train and validation loaders.
+

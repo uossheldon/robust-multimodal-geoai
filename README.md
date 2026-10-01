@@ -181,7 +181,7 @@ Expected Google Drive inputs:
 - `robust-multimodal-geoai/data/SummerSchool_Subset.zip`
 - `robust-multimodal-geoai/model_cache/TerraMind-1.0-tiny-hf-cache.tar.gz` when available
 
-The notebook copies data to local `/content` storage, trains from local storage, and writes checkpoints/results/figures back to Drive.
+The notebook copies data to `/content/geoai_data/SummerSchool_Subset`, runs `scripts/run_terramind.py --data-root /content/geoai_data/SummerSchool_Subset`, and writes checkpoints/results/figures back to Drive.
 
 ## Data and model distribution policy
 
@@ -195,3 +195,4 @@ This repository does not distribute:
 - credentials, API keys, or tokens
 
 Small CSV/JSON summaries and figures are included to document completed experiments.
+

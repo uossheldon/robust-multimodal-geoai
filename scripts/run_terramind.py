@@ -16,9 +16,11 @@ def main() -> None:
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--no-class-weights", action="store_true")
+    parser.add_argument("--data-root", type=Path, default=None, help="Path to SummerSchool_Subset root, e.g. /content/geoai_data/SummerSchool_Subset")
     args = parser.parse_args()
-    train_full(batch_size=args.batch_size, epochs=args.epochs, seed=args.seed, use_class_weights=not args.no_class_weights)
+    train_full(batch_size=args.batch_size, epochs=args.epochs, seed=args.seed, use_class_weights=not args.no_class_weights, data_root=args.data_root)
 
 
 if __name__ == "__main__":
     main()
+

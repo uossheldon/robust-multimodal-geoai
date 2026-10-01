@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Any
 
 import numpy as np
@@ -16,6 +16,26 @@ TERRAMIND_S1RTC_MEAN = torch.tensor([-10.930, -17.329], dtype=torch.float32).vie
 TERRAMIND_S1RTC_STD = torch.tensor([4.391, 4.459], dtype=torch.float32).view(2, 1, 1)
 SAR_NODATA = -9999.0
 VALID_CLASSES = np.array([0, 1, 2, 3], dtype=np.int64)
+
+
+def default_terramind_data_root(project_root: str | Path) -> Path:
+    return Path(project_root) / "data" / "raw" / "SummerSchool_Subset"
+
+
+def resolve_terramind_paths(data_root: str | Path, date: str) -> dict[str, Path]:
+    """Resolve SummerSchool_Subset paths independently of manifest path separators."""
+    root = data_root if isinstance(data_root, PurePath) else Path(data_root)
+    safe_date = str(date)
+    mask_date = safe_date.replace("-", "_")
+    layer_dir = root / "images" / safe_date / "layers"
+    return {
+        "B02": layer_dir / f"{safe_date}_B02.tif",
+        "B03": layer_dir / f"{safe_date}_B03.tif",
+        "B04": layer_dir / f"{safe_date}_B04.tif",
+        "VV": layer_dir / f"{safe_date}_VV.tif",
+        "VH": layer_dir / f"{safe_date}_VH.tif",
+        "mask": root / "masks" / f"{mask_date}.tiff",
+    }
 
 
 def _same_grid(src: rasterio.io.DatasetReader, reference: rasterio.io.DatasetReader) -> bool:
@@ -54,9 +74,9 @@ def _read_on_reference(
 class TerraMindMultimodalDataset(Dataset):
     """Manifest-backed TerraMind RGB + S1RTC dataset.
 
-    Returns raw TerraMind-ready named inputs rather than DeepLab-normalized tensors:
-    - RGB: B04/B03/B02 reflectance clipped to [0, 1], reordered to BGR, scaled by 255.
-    - S1RTC: VV/VH dB normalized with TerraMind published S1RTC statistics.
+    The manifest supplies split membership and tile windows. Raster paths are
+    reconstructed from ``data_root`` and acquisition date so the same manifest
+    works on Windows, Linux, and Colab.
     """
 
     def __init__(
@@ -65,9 +85,11 @@ class TerraMindMultimodalDataset(Dataset):
         *,
         project_root: str | Path,
         split: str | None,
+        data_root: str | Path | None = None,
         augment: bool = False,
     ) -> None:
         self.project_root = Path(project_root)
+        self.data_root = Path(data_root) if data_root is not None else default_terramind_data_root(self.project_root)
         manifest = pd.read_csv(manifest_path)
         if split is not None:
             manifest = manifest[manifest["split"] == split]
@@ -79,20 +101,22 @@ class TerraMindMultimodalDataset(Dataset):
 
     def __getitem__(self, index: int) -> tuple[dict[str, torch.Tensor], torch.Tensor]:
         row = self.manifest.iloc[index]
+        date = str(row.date)
+        paths = resolve_terramind_paths(self.data_root, date)
         window = Window(
             col_off=int(row.col_offset),
             row_off=int(row.row_offset),
             width=int(row.window_width),
             height=int(row.window_height),
         )
-        b04_path = self.project_root / str(row.source_B04)
+        b04_path = paths["B04"]
         with rasterio.open(b04_path) as reference:
             red = _read_on_reference(b04_path, reference, window, resampling=Resampling.bilinear, nodata=0)
-            green = _read_on_reference(self.project_root / str(row.source_B03), reference, window, resampling=Resampling.bilinear, nodata=0)
-            blue = _read_on_reference(self.project_root / str(row.source_B02), reference, window, resampling=Resampling.bilinear, nodata=0)
-            vv = _read_on_reference(self.project_root / str(row.source_VV), reference, window, resampling=Resampling.bilinear, nodata=np.nan)
-            vh = _read_on_reference(self.project_root / str(row.source_VH), reference, window, resampling=Resampling.bilinear, nodata=np.nan)
-            mask = _read_on_reference(self.project_root / str(row.source_mask), reference, window, resampling=Resampling.nearest, nodata=255)
+            green = _read_on_reference(paths["B03"], reference, window, resampling=Resampling.bilinear, nodata=0)
+            blue = _read_on_reference(paths["B02"], reference, window, resampling=Resampling.bilinear, nodata=0)
+            vv = _read_on_reference(paths["VV"], reference, window, resampling=Resampling.bilinear, nodata=np.nan)
+            vh = _read_on_reference(paths["VH"], reference, window, resampling=Resampling.bilinear, nodata=np.nan)
+            mask = _read_on_reference(paths["mask"], reference, window, resampling=Resampling.nearest, nodata=255)
 
         rgb = np.stack([red, green, blue]).astype(np.float32) / 10000.0
         rgb = np.clip(rgb, 0.0, 1.0)
@@ -137,3 +161,4 @@ def terramind_collate(batch: list[tuple[dict[str, torch.Tensor], torch.Tensor]])
         inputs["S1RTC"].append(sample_inputs["S1RTC"])
         targets.append(target)
     return {key: torch.stack(value, dim=0) for key, value in inputs.items()}, torch.stack(targets, dim=0)
+
