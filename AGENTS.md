@@ -1,6 +1,6 @@
 # Project Agent Instructions
 
-The research experiments and Phase 7 final test comparison are complete. Phase 8 is documentation, scientific auditing and presentation only.
+The research experiments and Phase 7 final test comparison are complete. Phases 8–9 cover documentation, scientific auditing and static presentation only. The Pages workflow is manual; do not deploy or change repository visibility as part of a presentation push.
 
 ## Frozen scientific record
 

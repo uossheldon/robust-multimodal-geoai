@@ -1,5 +1,23 @@
 # Robust Multimodal GeoAI for Algal Bloom Mapping
 
+**How robust are multimodal GeoAI segmentation models when optical satellite imagery is degraded or one sensing modality is unavailable?**
+
+![Python and PyTorch](figures/badges/python.svg) ![Rasterio and Sentinel sensors](figures/badges/geospatial.svg) ![Three training seeds](figures/badges/seeds.svg) ![Frozen TerraMind](figures/badges/terramind.svg)
+
+![Research overview: Sentinel-1 and Sentinel-2, sensor degradation, robust training and frozen temporal TEST results](figures/hero_overview.png)
+
+**Three findings from the final held-out TEST comparison**
+
+- **Clean robust fusion:** macro mIoU **0.1882 ± 0.0293** — occlusion-trained fusion, three training seeds.
+- **70% simulated optical occlusion:** macro mIoU **0.2122 ± 0.0115** — occlusion-trained fusion, nine pooled training-seed × corruption-seed runs.
+- **Frozen TerraMind:** binary algae Dice **0.6821 ± 0.0025** — three training seeds; binary detection is distinct from four-class severity quality.
+
+± denotes sample SD; the sampling populations differ. No significance claim is made. Earlier Phase 2D TEST access and model-specific valid-pixel support qualify the final comparison; the scientific detail below preserves both.
+
+[Final TEST results](#final-held-out-test-results) · [Project website source](site/) · [Preview / GitHub Pages setup](docs/GITHUB_PRESENTATION.md) · [Scientific audit](docs/SCIENTIFIC_AUDIT.md)
+
+---
+
 An independent research project inspired by the Newcastle GeoAI Summer School, studying four-class algal-bloom mapping with Sentinel-1 radar and Sentinel-2 optical imagery. Controlled degradation experiments, three-seed robust training and a frozen TerraMind benchmark show that resilience to simulated optical occlusion does not remove the difficulty of temporal generalisation.
 
 ## Research Question

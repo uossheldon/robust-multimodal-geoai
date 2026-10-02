@@ -79,3 +79,7 @@ figures/**/*.tiff
 Thumbs.db
 .vscode/
 .idea/
+
+# Generated static website artifact and local browser-check outputs
+.site-build/
+.site-preview/

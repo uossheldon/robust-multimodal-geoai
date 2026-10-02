@@ -1,0 +1,55 @@
+name: Deploy research site to Pages
+
+# Deliberately manual: pushing presentation work does not publish the site.
+on:
+  workflow_dispatch:
+    inputs:
+      publish_reviewed_site:
+        description: 'Publish the reviewed static site (may be public even from a private repo)'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main' && inputs.publish_reviewed_site
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Static source and existing path checks
+        run: python scripts/check_lightweight.py
+      - name: Build and check explicitly reviewed static files
+        run: python scripts/check_presentation.py
+      - name: Configure Pages (must already be enabled manually)
+        uses: actions/configure-pages@v5
+      - name: Upload only the reviewed static artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .site-build
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy static site
+        id: deployment
+        uses: actions/deploy-pages@v4
