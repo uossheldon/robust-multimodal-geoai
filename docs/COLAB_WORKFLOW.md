@@ -1,6 +1,6 @@
 # Colab Workflow for TerraMind
 
-Phase: 6C
+Historical Phase 6C / 6C-R workflow; training is complete. These instructions describe independent reproduction, not remaining project work. Preserve the frozen record and archive each seed before another run. No command here was executed in Phase 8.
 
 This workflow uses the validated Colab setup:
 
@@ -31,20 +31,22 @@ Expected Drive files:
 ```bash
 cd /content
 if [ ! -d robust-multimodal-geoai ]; then
-  git clone <YOUR_GITHUB_REPO_URL> robust-multimodal-geoai
+  git clone https://github.com/uossheldon/robust-multimodal-geoai.git robust-multimodal-geoai
 else
   cd robust-multimodal-geoai
   git pull
 fi
 ```
 
-## 3. Install TerraMind dependencies without changing system CUDA
+Authenticate to the private repository through a secure Git mechanism; do not put tokens in notebook cells or URLs.
+
+## 3. Historical TerraMind dependency recipe
 
 ```bash
 pip install -q terratorch==1.2.13 torchgeo==0.9.0 numpy==2.2.6 "setuptools<81"
 ```
 
-Do not install or modify a system CUDA toolkit.
+This is the previously used recipe, not a fully locked environment. Verify torch/numpy/TerraTorch/TorchGeo versions after resolution against the table above; preserve the validated torch build. Do not install or modify a system CUDA toolkit.
 
 ## 4. Restore TerraMind Hugging Face cache when available
 
@@ -79,7 +81,7 @@ The runner reads rasters from `/content/geoai_data/SummerSchool_Subset`, not dir
 
 ```bash
 cd /content/robust-multimodal-geoai
-python scripts/run_terramind.py --batch-size 4 --epochs 10 --data-root /content/geoai_data/SummerSchool_Subset
+python scripts/run_terramind.py --batch-size 4 --epochs 10 --seed 42 --data-root /content/geoai_data/SummerSchool_Subset
 ```
 
 The built-in smoke test verifies:
@@ -95,7 +97,7 @@ The built-in smoke test verifies:
 - 621 train tiles and 111 validation tiles
 - no test dates loaded
 
-Batch size 8 may be used only after the batch-size 4 Colab run shows it is safe.
+Batch size **4** is fixed for the completed benchmark and three-seed reproduction. The command runs its smoke checks and then full decoder training; it is not smoke-only. Seeds 7 and 123 use the same settings, as documented in [TERRAMIND_REPRODUCIBILITY.md](TERRAMIND_REPRODUCIBILITY.md).
 
 ## 7. Persist outputs back to Drive
 
@@ -110,5 +112,5 @@ cp figures/terramind_*.png /content/drive/MyDrive/robust-multimodal-geoai/colab_
 
 ## 8. Test-date policy
 
-Do not evaluate test dates in Phase 6C. The runner only constructs train and validation loaders.
+The Phase 6C runner constructs only train and validation loaders. The completed Phase 7 comparison separately evaluated the frozen checkpoints. No further TEST inference, tuning or checkpoint selection is part of finalisation.
 

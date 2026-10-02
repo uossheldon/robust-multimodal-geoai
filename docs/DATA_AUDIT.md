@@ -1,5 +1,7 @@
 # Data Audit
 
+Historical Phase 1/1.5 audit. Initial missing-file notes describe the pre-retrieval state; the later Phase 1.5 section records successful local retrieval. Current project status is in [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md).
+
 Phase 1 static audit for the Day 1 and Day 2 lab workflows. Source notebooks were inspected as JSON; no cells were executed. Lecture PDFs were not read.
 
 ## Source Workflows

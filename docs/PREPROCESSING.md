@@ -1,6 +1,6 @@
 # Preprocessing
 
-Phase 2A.1 replaces the temporary preview sampler with a rasterio-based geospatial preprocessing path. No model training, final split, or full 12-date cache was created.
+Current pipeline: rasterio alignment, the fixed 846-tile manifest (621 train / 111 validation / 114 TEST), and on-demand source reads. The Phase 2A.1 preview measurements below are historical; model training and the frozen Phase 7 comparison are complete.
 
 ## Environment
 
@@ -76,12 +76,12 @@ Preview tiles: 24 across 2 dates.
 - `figures/data_alignment_check.png`
 - `figures/class_distribution.png`
 
-## Remaining Before Full Cache
+## Final protocol
 
-- Run the rasterio pipeline over all 12 dates only after Phase 2B is explicitly requested.
-- Decide whether final experiments use all valid 224-pixel tiles or the notebook's small selected subsets.
-- Record checksums for raw data and generated manifests.
+Phase 2B processed all 12 dates; the fixed manifest retains full 224×224 non-overlapping windows with at least 20% common valid pixels. No duplicated full tile cache is required. Split membership is locked in `configs/split_v1.yaml`; no post-TEST selection changes are allowed.
+
+Manifest validity and runtime scoring support differ: S2 loaders use aligned labels, while SAR/fusion/TerraMind also ignore invalid SAR targets. The resulting unequal TEST pixel counts are disclosed in [SCIENTIFIC_AUDIT.md](SCIENTIFIC_AUDIT.md#valid-pixel-comparability); do not treat manifest class counts as each model's evaluation denominator.
 
 ## Phase 2B Manifest Note
 
-Phase 2B extended the rasterio pipeline to all 12 dates and wrote `results/tile_manifest.csv` with `846` usable tiles. It still avoids saving duplicated raster tile arrays; future datasets should read the source rasters on demand from manifest file paths and windows.
+Phase 2B extended the rasterio pipeline to all 12 dates and wrote `results/tile_manifest.csv` with `846` usable tiles. It still avoids saving duplicated raster tile arrays; the implemented datasets read the source rasters on demand from manifest windows. TerraMind resolves source paths from a configurable data root; legacy DeepLab loaders retain Windows-style manifest strings.

@@ -9,7 +9,7 @@ Training probabilities:
 - 25% zero S2 channels, S1 only
 - 0% drop both modalities
 
-No partial optical occlusion was used during training. No test dates were evaluated.
+No partial optical occlusion was used during this training phase. The values below compare single selected validation runs, not three-seed means. TEST was not evaluated during Phase 4B1; the later frozen comparison is complete.
 
 ## Result Summary
 

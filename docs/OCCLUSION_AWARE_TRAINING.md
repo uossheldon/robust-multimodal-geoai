@@ -2,7 +2,7 @@
 
 Phase 4B2 keeps the five-channel early-fusion architecture and modality-dropout probabilities fixed. The only new training change is simulated optical occlusion on half of intact both-modality training samples, with occlusion fraction sampled uniformly from 10% to 70%.
 
-These masks are simulated optical occlusion, not real clouds. No test dates were evaluated.
+These masks are simulated optical occlusion, not real clouds. This Phase 4B2 table is validation-only; the later frozen TEST comparison is in [FINAL_TEST_RESULTS.md](FINAL_TEST_RESULTS.md).
 
 Training seeds: `[42, 7, 123]`.
 
@@ -17,3 +17,7 @@ Training seeds: `[42, 7, 123]`.
 | 70% simulated optical occlusion | 0.0334 ± 0.0260 | 0.1620 ± 0.0054 | 0.2547 ± 0.0161 |
 
 Conclusion: Partial-occlusion training improves simulated optical-occlusion macro mIoU beyond modality dropout, with a small clean macro mIoU decrease.
+
+## Aggregation scope
+
+These are three-training-seed validation means ± sample SD (42, 7, 123); occlusion metrics are averaged over the fixed corruption seeds within each training run. Original fusion here is a three-seed mean (clean 0.2592), distinct from the selected single-run baseline (0.2425). In the frozen final TEST comparison, clean/missing conditions use training-seed SD, while optical occlusion uses pooled SD over nine training-seed × corruption-seed runs. See [FINAL_TEST_RESULTS.md](FINAL_TEST_RESULTS.md). Numerical differences do not establish statistical significance.

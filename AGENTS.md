@@ -1,40 +1,23 @@
 # Project Agent Instructions
 
-This project is currently in Phase 0.
+The research experiments and Phase 7 final test comparison are complete. Phase 8 is documentation, scientific auditing and presentation only.
 
-## Read-Only Reference Material
+## Frozen scientific record
 
-Treat these sibling folders as read-only references:
+- Do not train, tune, rerun inference, select checkpoints using TEST, or alter saved scientific results during finalisation.
+- Preserve the split, tile manifest, preprocessing, architecture, loss and experiment settings.
+- Distinguish validation/TEST, single runs/three-seed means, and training/corruption seeds. Document contradictions; retain historical evidence.
+- Read `docs/SCIENTIFIC_AUDIT.md` before claims about test access, pixel-matched comparisons or reproducibility status.
+- Presentation scripts may read saved CSV/JSON without executing models.
 
-- `../2026 GeoAI Summer School Material/`
-- `../analysis/`
+## Read-only references
 
-Do not modify, rename, move, or delete files in those folders.
+Treat `../2026 GeoAI Summer School Material/` and `../analysis/` as read-only. Do not modify, move, rename or delete them, or re-analyse lecture PDFs for finalisation.
 
-## Phase 0 Rules
+## Distribution and writing
 
-- Do not download data.
-- Do not install packages.
-- Do not train models.
-- Do not implement model architectures.
-- Do not run notebooks.
-- Do not re-analyse the source PDFs.
-- Do not commit external datasets, pretrained weights, generated rasters, or large binary artifacts.
-
-## Intended Project Direction
-
-The research question is:
-
-> How robust are multimodal GeoAI segmentation models when optical satellite imagery is degraded or one sensing modality is unavailable?
-
-The likely starting point for future work is the summer school SAR and optical fusion material, using the existing analysis files for concise context. Future implementation should preserve strict train, validation, and test separation by date or scene, avoid pixel-level leakage, and report uncertainty at scene/date level where possible.
-
-## Documentation Expectations
-
-Keep documentation clear about what is:
-
-- Present locally.
-- Inferred from the summer school notebooks.
-- Proposed for future work.
-- Dependent on external data or checkpoints.
-
+- Do not commit datasets, TIFFs, archives, checkpoints, model caches, credentials or large binaries.
+- Do not change visibility or add a software license without explicit authorization.
+- Dataset/label provenance and permission to publish data-derived figures need review before public release.
+- Use “simulated optical occlusion”; make no real-cloud, universal foundation-model superiority or statistical-significance claims.
+- Keep negative findings and temporal generalisation limits visible.

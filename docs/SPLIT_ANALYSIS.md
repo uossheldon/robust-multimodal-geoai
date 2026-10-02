@@ -1,5 +1,7 @@
 # Split Analysis
 
+Historical Phase 2B candidate analysis. The final split is locked in [split_v1.yaml](../configs/split_v1.yaml): 621 train / 111 validation / 114 TEST. Candidate proposals below are not current selection instructions; no post-TEST changes are permitted.
+
 Phase 2B builds the full manifest and proposes date-level splits only. No model training and no duplicated raster tile cache were created.
 
 ## Manifest Summary

@@ -1,5 +1,7 @@
 # TerraMind Feasibility Assessment
 
+Historical Phase 6A feasibility assessment, superseded for execution status by the [completed frozen benchmark](TERRAMIND_BENCHMARK.md) and [three-seed validation results](TERRAMIND_REPRODUCIBILITY.md). No feasibility estimate should be read as a measured final runtime/VRAM result.
+
 Phase: 6A  
 Scope: feasibility only; no training, no test-set evaluation, no model-weight download.
 

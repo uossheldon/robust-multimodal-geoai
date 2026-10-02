@@ -30,3 +30,7 @@ Carry forward `weighted_loss` as the conventional optical baseline. It has valid
 ## Notes
 
 The balanced-sampling run kept the loss unweighted. No SAR, fusion, focal loss, architecture change, or test-set evaluation was used.
+
+## Final status
+
+The validation-only selection above is frozen. Its conventional weighted S2 baseline is a single run; the historical unweighted Phase 2D TEST result is preserved separately. The later [Phase 7 final comparison](FINAL_TEST_RESULTS.md) occurred after subsequent development was frozen, with no post-Phase-7 tuning or checkpoint selection.

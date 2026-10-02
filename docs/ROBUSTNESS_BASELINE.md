@@ -1,6 +1,6 @@
 # Robustness Baseline
 
-Phase 4A evaluates frozen validation models only. No model was retrained and no held-out test date was evaluated.
+Historical Phase 4A validation-only benchmark; no training or TEST evaluation occurred in this phase. The completed Phase 7 comparison is in [FINAL_TEST_RESULTS.md](FINAL_TEST_RESULTS.md).
 
 ## Corruption Definition
 
@@ -27,3 +27,9 @@ Occluded optical values are set to zero after optical normalization. Zero theref
 ## Interpretation
 
 The benchmark measures controlled degradation under simulated missing optical information. It does not estimate real cloud performance because cloud physics, shadows, haze and cloud-mask errors are not simulated.
+
+## Population and final-result distinction
+
+The table above uses one frozen checkpoint per model, with mean ± sample SD over corruption seeds 101/202/303. It is not training-seed reproducibility. The naive-fusion 70% mIoU 0.0133 is therefore distinct from the later three-training-seed validation mean 0.0334. The Phase 4B studies average corruption runs within each training seed before computing training-seed SD; Phase 7 TEST occlusion instead pools all nine training-seed × corruption-seed runs. Clean/missing-sensor TEST uses three training seeds. Do not compare these SDs as identical uncertainty estimates.
+
+S2-only and SAR-based models use different runtime valid-pixel masks. See [SCIENTIFIC_AUDIT.md](SCIENTIFIC_AUDIT.md) for support, test-access and interpretation qualifications.

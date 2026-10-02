@@ -1,5 +1,7 @@
 # Data Provenance
 
+Phase 8 status: Phase 1.5 retrieved/validated the archive locally (see [DATA_AUDIT.md](DATA_AUDIT.md#phase-15-retrieval-and-validation)). The initial access/missing-data notes below are historical. Label/archive license and public data-derived figure permissions remain unresolved; no source-data or software license is asserted.
+
 Phase 1 provenance notes for the Day 1 and Day 2 data dependencies.
 
 ## External References Found
@@ -57,11 +59,11 @@ Sentinel-1 and Sentinel-2 source imagery is generally open data, but the prepare
 
 Do not redistribute the archive, masks, or derived products from this project until explicit license and attribution terms are confirmed.
 
-## Phase 1 Blockers
+## Historical Phase 1 blockers (before retrieval)
 
-- `SummerSchool_Subset.zip` is absent locally.
-- Drive link status and permissions are unverified.
-- Source product IDs, exact crop bounds, and preprocessing provenance are not documented in the local materials.
+- At Phase 1, `SummerSchool_Subset.zip` was absent; Phase 1.5 resolved local availability.
+- Phase 1 had not checked Drive availability; Phase 1.5 recorded one successful reference and one 404. No new availability check was performed in Phase 8.
+- Phase 1 lacked source details; Phase 1.5 recorded representative Sentinel item IDs, API endpoints and SAR/optical units. This does not establish the complete label preparation history or redistribution rights.
 - Label origin and license are unknown.
 - Public reconstruction can likely recreate comparable imagery, but not the exact labelled dataset without the masks and preparation recipe.
 

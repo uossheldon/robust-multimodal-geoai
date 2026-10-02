@@ -215,7 +215,7 @@ def save_figures(clean_summary, robust_rows, per_date):
 
 def write_doc(clean, robust_summary, per_date, audit_info):
     DOCS_DIR.mkdir(exist_ok=True)
-    lines=['# Final Held-Out Test Results','', 'Phase 7: first and final held-out test evaluation. No post-test tuning was performed.','', '## Audit','', f"Test dates: {', '.join(TEST_DATES)}", f"Test tiles: {audit_info['test_tile_count']}", '', '## Clean test summary','', clean.to_markdown(index=False), '', '## Robustness test summary', '', robust_summary.to_markdown(index=False), '', '## Per-date behavior', '', per_date.to_markdown(index=False), '']
+    lines=['# Final Held-Out Test Results','', 'Phase 7: final comparison after model development was frozen. Earlier Phase 2D TEST access is preserved; no post-Phase-7 tuning or checkpoint selection occurred.','', '## Audit','', f"Test dates: {', '.join(TEST_DATES)}", f"Test tiles: {audit_info['test_tile_count']}", '', '## Clean test summary','', clean.to_markdown(index=False), '', '## Robustness test summary', '', robust_summary.to_markdown(index=False), '', '## Per-date behavior', '', per_date.to_markdown(index=False), '']
     (DOCS_DIR/'FINAL_TEST_RESULTS.md').write_text('\n'.join(lines), encoding='utf-8')
 
 

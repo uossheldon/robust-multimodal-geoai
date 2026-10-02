@@ -1,6 +1,6 @@
 # Summer School Reference
 
-This summary uses the existing `../analysis/` files as concise context. The source PDFs were not re-analysed for this project scaffold.
+This summary uses the existing `../analysis/` files as concise context. The source PDFs were not re-analysed for this finalisation. This is reference context; the independent experiments and final status are summarized in [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md).
 
 ## Relevant Local Context
 
@@ -21,26 +21,26 @@ For this project, Day 2 is the most relevant starting point because it compares 
 
 ## Working Interpretation
 
-The strongest future research direction is a controlled robustness study based on multimodal segmentation:
+The implemented research direction is a controlled robustness study based on multimodal segmentation:
 
 - RGB-only model.
 - SAR-only model.
 - RGB+SAR fused model.
-- Foundation-model variants if dependencies and checkpoints are available.
+- A frozen TerraMind RGB+S1RTC backbone with a lightweight decoder.
 - Missing-modality and degraded-optical tests under common splits.
 
 The project should avoid overclaiming geographic generalisation if the data remain limited to one lake or one region. A true cross-region claim requires additional external data with compatible labels.
 
 ## Known Constraints From Existing Analysis
 
-- Day 1 Part 2 and Day 2 depend on an external `SummerSchool_Subset.zip` archive that is not present locally.
+- Day 1 Part 2 and Day 2 depend on `SummerSchool_Subset.zip`, retrieved in Phase 1.5 for local experiments and excluded from Git.
 - Day 4 depends on an external prepared archive, checkpoint, and helper module that are not present locally.
 - Day 2 notebook text and code differ on epoch count; future reproduction should verify code settings directly.
 - The available Day 3 TIFF and PNG do not provide a cloud-free reference image.
 - Day 3 image generation outputs would not preserve georeferencing unless separately managed.
 - Existing Day 4 recorded results are historical notebook outputs and were not reproduced locally.
 
-## Phase 0 Decision
+## Attribution and completed project
 
-This scaffold records the research scope and creates a place for future work. It does not copy, execute, or modify the summer school material.
+The Summer School supplied educational context, notebooks and the external prepared dataset. This project implemented independent aligned data pipelines, controlled robustness training/evaluation, uncertainty diagnostics and foundation-model benchmarking. Source reference folders remain read-only. No publication, novelty or source-data redistribution entitlement is implied.
 

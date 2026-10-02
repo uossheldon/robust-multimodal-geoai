@@ -1,7 +1,7 @@
 # TerraMind Frozen Benchmark
 
 Phase: 6C  
-Scope: implementation and Colab execution workflow for validation-only TerraMind benchmarking.
+Status: completed across seeds 42, 7, 123. This document records the frozen benchmark design; [TERRAMIND_REPRODUCIBILITY.md](TERRAMIND_REPRODUCIBILITY.md) provides completed validation evidence and [FINAL_TEST_RESULTS.md](FINAL_TEST_RESULTS.md) the later frozen clean TEST comparison.
 
 ## Benchmark design
 
@@ -28,7 +28,7 @@ The experiment keeps the previous project setup fixed:
 - Classes: `0 background`, `1 low algae`, `2 mid algae`, `3 high algae`
 - Ignore label: `255`
 - Model selection: validation macro mIoU
-- Test dates: not evaluated
+- TEST was excluded during Phase 6C training/selection; frozen final evaluation occurred in Phase 7.
 
 ## Preprocessing
 
@@ -83,11 +83,11 @@ The default runner trains for 10 epochs with:
 - `CrossEntropyLoss(ignore_index=255)`
 - locked class weights from the selected weighted DeepLab experiments: `[0.243332998497, 0.709198873576, 0.651737877057, 2.395730250869]`
 
-Batch size can be increased to `8` in Colab if the smoke test and first epoch fit safely.
+The completed three-seed experiment used batch size `4`. Earlier feasibility suggestions to increase it are superseded by the locked benchmark settings.
 
 ## Outputs
 
-The implementation writes:
+The runner writes the following to its active output workspace; not all original Colab exports are present in this checkout:
 
 - `results/terramind_frozen/history.csv`
 - `results/terramind_frozen/metrics.json`
@@ -112,9 +112,11 @@ The comparison table labels conventional baselines as single-run values and robu
 
 The script does not rerun DeepLab experiments.
 
-## Blockers
+## Completed status and provenance
 
-This local Windows environment was not used for TerraMind training because the validated setup is Colab with TerraTorch installed. The code is designed to run in Colab after installing TerraTorch dependencies and making the Summer School dataset available under the project path.
+Training completed in Colab. Three-seed clean validation macro mIoU is **0.2771 ± 0.0138** and macro Dice **0.4269 ± 0.0161**. Clean TEST macro mIoU is **0.1718 ± 0.0177**, with binary algae Dice **0.6821 ± 0.0025**. Frozen TerraMind is not universally superior to robust DeepLab for four-class temporal generalisation.
+
+The completed validation summary is corroborated by checkpoint metadata in [TERRAMIND_VALIDATION_EVIDENCE.json](TERRAMIND_VALIDATION_EVIDENCE.json). Historical incomplete exports under `results/terramind_reproducibility/` remain intact and do not describe current training status. Full original per-seed Colab runtime/VRAM exports remain unavailable locally. See [scientific audit](SCIENTIFIC_AUDIT.md).
 
 ## Audit updates
 

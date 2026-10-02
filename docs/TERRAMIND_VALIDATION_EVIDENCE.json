@@ -1,0 +1,127 @@
+{
+  "per_seed": [
+    {
+      "seed": 42,
+      "epoch": 7,
+      "mean_iou": 0.2835111916065216,
+      "macro_dice": 0.43489083647727966,
+      "iou_background": 0.24392110109329224,
+      "iou_low": 0.4356265962123871,
+      "iou_mid": 0.23622164130210876,
+      "iou_high": 0.21827542781829834,
+      "binary_algae_iou": 0.4875232164575221,
+      "binary_algae_dice": 0.6554831696926915,
+      "class_weights": {
+        "class_0": 0.243332998497,
+        "class_1": 0.709198873576,
+        "class_2": 0.651737877057,
+        "class_3": 2.395730250869
+      }
+    },
+    {
+      "seed": 7,
+      "epoch": 5,
+      "mean_iou": 0.2613644003868103,
+      "macro_dice": 0.4083578288555145,
+      "iou_background": 0.22737614810466766,
+      "iou_low": 0.4002540707588196,
+      "iou_mid": 0.21084195375442505,
+      "iou_high": 0.20698541402816772,
+      "binary_algae_iou": 0.4908650232817387,
+      "binary_algae_dice": 0.6584969338152843,
+      "class_weights": {
+        "class_0": 0.243332998497,
+        "class_1": 0.709198873576,
+        "class_2": 0.651737877057,
+        "class_3": 2.395730250869
+      }
+    },
+    {
+      "seed": 123,
+      "epoch": 10,
+      "mean_iou": 0.2865670919418335,
+      "macro_dice": 0.4373447895050049,
+      "iou_background": 0.3378794491291046,
+      "iou_low": 0.41086894273757935,
+      "iou_mid": 0.1744697093963623,
+      "iou_high": 0.22305035591125488,
+      "binary_algae_iou": 0.5109131125422761,
+      "binary_algae_dice": 0.6762971454825871,
+      "class_weights": {
+        "class_0": 0.243332998497,
+        "class_1": 0.709198873576,
+        "class_2": 0.651737877057,
+        "class_3": 2.395730250869
+      }
+    }
+  ],
+  "aggregate": {
+    "mean_iou": {
+      "mean": 0.2771475613117218,
+      "std": 0.013753754334765462,
+      "n": 3
+    },
+    "macro_dice": {
+      "mean": 0.42686448494593304,
+      "std": 0.016074131737121557,
+      "n": 3
+    },
+    "iou_background": {
+      "mean": 0.2697255661090215,
+      "std": 0.05959989677327746,
+      "n": 3
+    },
+    "iou_low": {
+      "mean": 0.415583203236262,
+      "std": 0.01815136574139533,
+      "n": 3
+    },
+    "iou_mid": {
+      "mean": 0.20717776815096536,
+      "std": 0.03103860444068705,
+      "n": 3
+    },
+    "iou_high": {
+      "mean": 0.21610373258590698,
+      "std": 0.008249714211021828,
+      "n": 3
+    },
+    "binary_algae_iou": {
+      "mean": 0.49643378409384564,
+      "std": 0.012650301674297777,
+      "n": 3
+    },
+    "binary_algae_dice": {
+      "mean": 0.663425749663521,
+      "std": 0.0112483472694864,
+      "n": 3
+    }
+  },
+  "provenance": {
+    "kind": "Phase 8 read-only transcription of completed checkpoint validation metadata; no inference",
+    "checkpoints": [
+      {
+        "model": "terramind_frozen",
+        "checkpoint": "terramind_frozen_seed42_best.pt",
+        "sha256_16": "89165a78879347e2",
+        "bytes": 27595347
+      },
+      {
+        "model": "terramind_frozen",
+        "checkpoint": "terramind_frozen_seed7_best.pt",
+        "sha256_16": "9e47be8bf663f9bb",
+        "bytes": 27595347
+      },
+      {
+        "model": "terramind_frozen",
+        "checkpoint": "terramind_frozen_seed123_best.pt",
+        "sha256_16": "ea59dc756d258007",
+        "bytes": 27595347
+      }
+    ],
+    "binary_metrics": "Collapse saved validation_confusion_matrix classes 1/2/3 into algae; no new predictions",
+    "std": "Sample standard deviation across training seeds 42, 7, 123 (ddof=1)",
+    "training_time_and_peak_memory": "Not contained in these checkpoint metadata; not reconstructed",
+    "historical_exports": "results/terramind_reproducibility partial CSV/JSON exports preserved; superseded for completed validation reporting by this evidence"
+  }
+}

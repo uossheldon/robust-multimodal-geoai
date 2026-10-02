@@ -1,81 +1,24 @@
 # Project Scope
 
-## Research Question
+## Research question
 
 How robust are multimodal GeoAI segmentation models when optical satellite imagery is degraded or one sensing modality is unavailable?
 
-## Motivation
+This independent research project was inspired by Newcastle GeoAI Summer School material. It implements four-class algal-bloom segmentation on regional Sentinel-1/Sentinel-2 data; it is not a course-lab reproduction or a publication claim.
 
-Earth observation segmentation systems often combine optical imagery with radar or foundation-model features. Optical imagery can fail under cloud, haze, acquisition gaps, shadows, or sensor issues. A practical model should make its limits visible when one modality is degraded or missing, instead of producing confident maps that hide sensor failure.
+## Completed scope
 
-This project is intended to turn the summer school fusion material into a careful robustness study rather than a notebook reproduction.
+- Rasterio alignment to B04, nearest-neighbour labels, 224×224 non-overlapping tiles and a fixed date split: 621 train / 111 validation / 114 TEST tiles.
+- Weighted S2, weighted S1 and naive five-channel DeepLab early fusion.
+- Validation diagnosis, modality dropout, simulated optical-occlusion-aware training and three-seed reproducibility.
+- Validation-only uncertainty/calibration diagnostics and a three-seed probability ensemble.
+- Frozen TerraMind tiny RGB+S1RTC with a lightweight trained decoder, three seeds.
+- Frozen Phase 7 comparison on September 8 and 21, without subsequent tuning or checkpoint selection.
 
-## Phase 0 Deliverables
+Classes: 0 background, 1 low, 2 mid, 3 high algae; 255 ignore. Data/checkpoints are local dependencies, not repository contents.
 
-Phase 0 includes:
+## Boundaries
 
-- Repository structure.
-- Scope documentation.
-- Reference summary from existing analysis files.
-- Data and artifact boundaries.
-- Placeholder folders for future code, configs, results, figures, and notebooks.
+No attention/gating, real-cloud benchmark, TerraMind full fine-tuning, TerraMind robustness, calibration fitting or cross-region evaluation is claimed. Date separation prevents same-date tiles crossing sets; repeated geographic coverage remains.
 
-Phase 0 excludes:
-
-- Data download.
-- Package installation.
-- Notebook execution.
-- Model implementation.
-- Training or inference.
-- New PDF analysis.
-- Phase 1 experiment setup.
-
-## Candidate Future Baselines
-
-Future phases may evaluate these families of methods, after data access and licensing are resolved:
-
-- RGB-only segmentation baseline.
-- SAR-only segmentation baseline.
-- Early-fusion RGB and SAR segmentation baseline.
-- Foundation-model RGB features.
-- Foundation-model multimodal features.
-- Missing-modality and degraded-optical ablations.
-
-These are candidate directions only. They are not implemented in Phase 0.
-
-## Robustness Questions
-
-Future experiments should separate at least four cases:
-
-1. Clean optical input with all modalities available.
-2. Degraded optical input with SAR available.
-3. Optical-only input when SAR is unavailable.
-4. SAR-only or fallback input when optical imagery is unavailable.
-
-Useful degradation settings may include real cloud/invalid-pixel masks, synthetic optical masking, reduced optical quality, and missing-channel tests. Any synthetic corruption should be clearly marked as synthetic.
-
-## Evaluation Principles
-
-Future evaluation should:
-
-- Keep train, validation, and test data split by date, scene, or region.
-- Avoid treating nearby pixels as independent samples for uncertainty claims.
-- Report per-date or per-scene metrics in addition to aggregate scores.
-- Use validation data for thresholds and model selection.
-- Evaluate the final test set once after choices are frozen.
-- Record missing-modality handling explicitly.
-- Distinguish model failure from data-alignment or label-quality failure.
-
-Candidate metrics include mean IoU, class IoU, Dice, precision, recall, false-positive area, calibration error, per-scene variance, and latency or memory if deployment robustness is studied.
-
-## Phase 1 Entry Criteria
-
-Start Phase 1 only after explicit approval and after documenting:
-
-- Which dataset will be used.
-- Whether the external summer school archives are accessible.
-- Data rights and redistribution limits.
-- Compute target and environment plan.
-- Minimal baseline to reproduce first.
-- Success criteria for a small pilot run.
-
+Phase 8 changes documentation and presentation only. Historical Phase 2D test access, differing pixel validity, uncertainty limitations and result provenance are recorded in [SCIENTIFIC_AUDIT.md](SCIENTIFIC_AUDIT.md). No statistical-significance test was performed. See [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) and [REPRODUCTION.md](REPRODUCTION.md).

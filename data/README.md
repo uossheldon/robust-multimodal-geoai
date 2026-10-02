@@ -12,15 +12,15 @@ data/raw/
     masks/
 ```
 
-The expected dates are:
+The project uses the locked date split in `../configs/split_v1.yaml` (621 train / 111 validation / 114 TEST tiles). The earlier notebook split is superseded:
 
-- Train: `2025-01-01`, `2025-01-31`, `2025-03-12`, `2025-04-08`, `2025-04-09`, `2025-05-16`, `2025-05-18`, `2025-05-21`
-- Validation: `2025-06-20`, `2025-08-12`
+- Train: `2025-01-31`, `2025-03-12`, `2025-04-08`, `2025-04-09`, `2025-05-16`, `2025-05-18`, `2025-05-21`, `2025-08-12`
+- Validation: `2025-01-01`, `2025-06-20`
 - Test: `2025-09-08`, `2025-09-21`
 
 For each date, the notebooks expect Sentinel-style optical files `B02`, `B03`, `B04`, `B08`, derived `NDVI`/`NDWI`, SAR `VV`/`VH`, metadata JSON files, and a matching mask named with underscores, such as `2025_01_01.tiff`.
 
-Current local validation:
+Recorded Phase 1.5 local validation:
 
 - Archive size: 1,971,737,334 bytes, about 1.836 GiB.
 - Extracted size: 2,144,997,936 bytes, about 1.998 GiB.
@@ -33,7 +33,7 @@ Current local validation:
 - SAR example: float32 dB, nodata `-9999`.
 - Mask example: uint8 labels, nodata/ignore `255`.
 
-Do not place raw archives, extracted rasters, labels, checkpoints, or generated arrays in git. `data/raw/` and `*.zip` are ignored in `.gitignore`. Before any Phase 2 work, document final source URLs, checksums, licenses, label origin, crop bounds, CRS/grid, nodata policy, acquisition times, and split rules.
+Do not place raw archives, extracted rasters, labels, checkpoints, or generated arrays in git. `data/raw/` and `*.zip` are ignored in `.gitignore`. The source archive/label license and permission for publishing derived imagery remain unresolved; see the final provenance qualifications. No source-data license is assumed.
 
-See `../docs/DATA_AUDIT.md` and `../docs/DATA_PROVENANCE.md` for the Phase 1 audit.
+See [data audit](../docs/DATA_AUDIT.md), [provenance](../docs/DATA_PROVENANCE.md) and [reproduction](../docs/REPRODUCTION.md). TerraMind Colab uses `--data-root /content/geoai_data/SummerSchool_Subset`. Phase 7 final TEST results are complete; Phase 8 does not read rasters or rerun inference.
 
