@@ -1,6 +1,6 @@
 # Robust Multimodal GeoAI for Algal Bloom Mapping
 
-**How robust are multimodal GeoAI segmentation models when optical satellite imagery is degraded or one sensing modality is unavailable?**
+A completed research study of Sentinel-1/Sentinel-2 algal-bloom segmentation under simulated optical occlusion and missing sensors.
 
 ![Python and PyTorch](figures/badges/python.svg) ![Rasterio and Sentinel sensors](figures/badges/geospatial.svg) ![Three training seeds](figures/badges/seeds.svg) ![Frozen TerraMind](figures/badges/terramind.svg)
 
@@ -14,7 +14,9 @@
 
 ± denotes sample SD; the sampling populations differ. No significance claim is made. Earlier Phase 2D TEST access and model-specific valid-pixel support qualify the final comparison; the scientific detail below preserves both.
 
-[Final TEST results](#final-held-out-test-results) · [Project website source](site/) · [Preview / GitHub Pages setup](docs/GITHUB_PRESENTATION.md) · [Scientific audit](docs/SCIENTIFIC_AUDIT.md)
+[Project website](https://uossheldon.github.io/robust-multimodal-geoai/) · [Final TEST results](docs/FINAL_TEST_RESULTS.md) · [Reproduction](docs/REPRODUCTION.md) · [Scientific audit](docs/SCIENTIFIC_AUDIT.md)
+
+Website availability depends on Pages activation; [local preview and deployment guide](docs/GITHUB_PRESENTATION.md).
 
 ---
 
@@ -83,11 +85,11 @@ Phase 7, 114 tiles across two September dates. **± is sample standard deviation
 
 | Model | Runs | Macro mIoU | Macro Dice | Binary algae Dice |
 | --- | --- | --- | --- | --- |
-| S2 weighted | Single | 0.1698 | 0.2541 | 0.6252 |
-| S1 weighted | Single | 0.1756 | 0.2799 | 0.5101 |
-| Naive early fusion | Single | 0.1658 | 0.2700 | 0.6136 |
+| Sentinel-2 weighted | Single | 0.1698 | 0.2541 | 0.6252 |
+| Sentinel-1 weighted | Single | 0.1756 | 0.2799 | 0.5101 |
+| Early fusion | Single | 0.1658 | 0.2700 | 0.6136 |
 | Modality dropout | 3 seeds | 0.1826 ± 0.0123 | 0.2987 ± 0.0182 | 0.5731 ± 0.0421 |
-| Dropout + occlusion training | 3 seeds | 0.1882 ± 0.0293 | 0.3033 ± 0.0380 | 0.6151 ± 0.0289 |
+| Occlusion-trained fusion | 3 seeds | 0.1882 ± 0.0293 | 0.3033 ± 0.0380 | 0.6151 ± 0.0289 |
 | Frozen TerraMind | 3 seeds | 0.1718 ± 0.0177 | 0.2843 ± 0.0235 | 0.6821 ± 0.0025 |
 
 ![Final clean test comparison](figures/final_clean_model_comparison.png)
@@ -108,11 +110,11 @@ The non-monotonic test curve does not mean obscuring imagery adds information. C
 
 | Model | Runs | Validation macro mIoU | TEST macro mIoU |
 | --- | --- | --- | --- |
-| S2 weighted | Single | 0.2274 | 0.1698 |
-| S1 weighted | Single | 0.2349 | 0.1756 |
-| Naive early fusion | Single | 0.2425 | 0.1658 |
+| Sentinel-2 weighted | Single | 0.2274 | 0.1698 |
+| Sentinel-1 weighted | Single | 0.2349 | 0.1756 |
+| Early fusion | Single | 0.2425 | 0.1658 |
 | Modality dropout | 3 seeds | 0.2725 ± 0.0157 | 0.1826 ± 0.0123 |
-| Dropout + occlusion training | 3 seeds | 0.2648 ± 0.0089 | 0.1882 ± 0.0293 |
+| Occlusion-trained fusion | 3 seeds | 0.2648 ± 0.0089 | 0.1882 ± 0.0293 |
 | Frozen TerraMind | 3 seeds | 0.2771 ± 0.0138 | 0.1718 ± 0.0177 |
 
 Every method loses four-class performance, consistent with substantial temporal/domain shift. This is a main finding, not a basis for further model selection. S2 and TerraMind struggle particularly on September 8; mid-algae IoU remains low across methods. [Per-date results](docs/FINAL_TEST_RESULTS.md#per-date-behaviour).

@@ -46,10 +46,13 @@ The smoke test is built into this command, which continues to full decoder train
 ## Presentation-only reproduction
 
 ```bash
+python scripts/presentation_data.py
 python scripts/render_final_presentation.py
+python scripts/render_hero.py
+python scripts/check_presentation.py
 ```
 
-Requires Matplotlib in the current Python environment. Reads frozen CSV/JSON summaries and the documented TerraMind metadata transcription; writes summary PNGs only. No dataset, checkpoint, GPU, network or model inference is used. Scientific records and the existing qualitative image remain unchanged.
+Requires Matplotlib in the current Python environment. Reads frozen CSV/JSON summaries and the documented TerraMind metadata transcription; writes four summary PNG/SVG figures and original schematic assets. The JSON asset is an exact presentation copy of frozen aggregates; the explorer only displays these values and TEST-minus-validation score differences. No dataset, checkpoint, GPU, network or model inference is used. Scientific records and the existing qualitative image remain unchanged.
 
 ## Known reproducibility limits
 

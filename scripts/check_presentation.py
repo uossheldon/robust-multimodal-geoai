@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from build_site import FILES, build, audit_artifact, OUTPUT
+from presentation_data import load_summary
 
 
 class Page(HTMLParser):
@@ -60,10 +61,30 @@ def check():
     summary=json.loads((ROOT/'results/final_test/final_summary.json').read_text())
     occ=next(r for r in summary['robustness_summary'] if r['model']=='occlusion_trained' and r['condition']=='occlusion_70')
     assert page.headlines=={'clean':value(results['occlusion_trained'],'mean_iou'),'occlusion':value(occ,'mean_iou'),'terramind':value(results['terramind_frozen'],'binary_algae_dice')}
-    for phrase in ['Phase 2D','post-Phase-7','3,474,284','3,169,093','pooled','licensing review','not real clouds']:
+    for phrase in ['Phase 2D','post-Phase-7','3,474,284','3,169,093','pool','licensing review','not measured real cloud cover']:
         assert phrase in html, f'Missing scientific qualification: {phrase}'
     assert not re.search(r'\b[A-Za-z]:[\\/]',html), 'Local Windows path in site'
     assert 'secrets.' not in (ROOT/'.github/workflows/pages.yml').read_text(), 'Pages must not need user secrets'
+    # Every interactive value must be an exact copy of a frozen aggregate.
+    data=json.loads((OUTPUT/'assets/results_summary.json').read_text(encoding='utf-8'))
+    assert data==load_summary(), 'Explorer data differs from frozen source summaries'
+    assert data['occlusion_rates']==[0,10,30,50,70]
+    assert [m['n'] for m in data['models']]==[1,1,1,3,3,3]
+    assert len(data['robustness'])==14
+    for row in data['robustness']:
+        assert row['mean_iou']['n']==(9 if row['condition'].startswith('occlusion_') else 3)
+    # Independent rounded cross-check against the approved presentation brief.
+    expected_val=[.2274,.2349,.2425,.2725,.2648,.2771]
+    assert [round(m['validation']['mean'],4) for m in data['models']]==expected_val
+    assert all(m['validation']['mean']>m['clean']['mean_iou']['mean'] for m in data['models'])
+    assert all(m['clean']['mean_iou']['std'] is None for m in data['models'][:3])
+    assert 'id="evaluation-notes"' in html and '<summary>Evaluation notes</summary>' in html
+    assert '<div id="explorer" hidden>' in html, 'Static no-JS fallback required'
+    assert re.findall(r'<option value="(\d+)">', html)==['0','10','30','50','70']
+    for name in ['final_clean_model_comparison','final_robustness_curves','final_per_class_iou','final_temporal_generalisation']:
+        ET.parse(ROOT/'figures'/f'{name}.svg')
+    hero=(ROOT/'figures/hero_overview.svg').read_text(encoding='utf-8')
+    for value in page.headlines.values(): assert value in hero
     for name in FILES:
         assert not any(s in name.lower() for s in ['qualitative','alignment','checkpoint','.tif','.zip']), 'Unreviewed data-derived asset'
     # Prove the deployment audit rejects an unexpected raw-data-like file.
@@ -80,7 +101,7 @@ def check():
         if not ref.startswith('https://'): assert (ROOT/ref).is_file(), f'Broken README image: {ref}'
     for p in OUTPUT.rglob('*'):
         if p.is_file(): assert p.read_bytes()==((ROOT/FILES[p.relative_to(OUTPUT).as_posix()]).read_bytes() if p.name!='.nojekyll' else b'')
-    print('PASS: 18 TEST table values + 3 headlines match frozen sources; links/qualifications/SVGs/asset allowlist pass.')
+    print('PASS: 18 TEST cells, 3 headlines, all explorer aggregates and 6 validation values match frozen sources; links, notes, SVGs and safe artifact pass.')
 
 
 if __name__=='__main__': check()

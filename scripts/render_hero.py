@@ -52,32 +52,32 @@ def main():
     arrow(ax,(.291,.704),(.373,.641)); arrow(ax,(.291,.548),(.373,.603)); arrow(ax,(.637,.63),(.704,.63))
     card(ax,.721,.508,.225,.24)
     text(ax,.738,.708,'Algae severity',22,weight='bold')
-    for i,(name,color) in enumerate([('Background','#3d4746'),('Low','#6a9950'),('Mid','#dfa835'),('High','#be5949')]):
+    for i,(name,color) in enumerate([('Background','#3d4746'),('Low algae','#6a9950'),('Mid algae','#dfa835'),('High algae','#be5949')]):
         y=.657-i*.04
         ax.add_patch(Rectangle((.741,y-.010),.017,.020,color=color))
         text(ax,.772,y,name,14,MUTED)
     text(ax,.05,.45,'STRESS TESTS',13,TEAL,'bold')
     text(ax,.05,.412,'Simulated optical occlusion',18,weight='bold')
     text(ax,.05,.377,'0 / 10 / 30 / 50 / 70%',14,MUTED)
-    text(ax,.38,.412,'Missing sensor',18,weight='bold')
+    text(ax,.38,.412,'Missing modality',18,weight='bold')
     text(ax,.38,.377,'S1 absent or S2 absent',14,MUTED)
-    text(ax,.721,.412,'Robust training',18,weight='bold')
+    text(ax,.721,.412,'Training interventions',16,weight='bold')
     text(ax,.721,.377,'Modality dropout',14,MUTED)
     text(ax,.721,.349,'+ occlusion-aware training',14,MUTED)
     ax.plot([.05,.945],[.307,.307],color='#c6d3cb',lw=1)
-    text(ax,.05,.277,'FROZEN TEMPORAL TEST',13,TEAL,'bold')
+    text(ax,.05,.277,'HELD-OUT TEMPORAL TEST',13,TEAL,'bold')
     text(ax,.95,.277,'114 tiles · 8 & 21 September 2025',14,MUTED,ha='right')
-    labels=['Robust fusion · clean','Robust fusion · 70% occlusion','Frozen TerraMind · clean']
-    foot=['Macro mIoU · 3 training seeds','Macro mIoU · 9 pooled runs¹','Binary algae Dice · 3 seeds']
+    labels=['Occlusion-trained fusion\nClean TEST','Occlusion-trained fusion\n70% optical occlusion','Frozen TerraMind\nClean TEST']
+    foot=['Macro mIoU','Macro mIoU','Binary algae Dice']
     for x,label,value,note in zip([.05,.359,.668],labels,vals,foot):
-        card(ax,x,.107,.279,.12)
-        text(ax,x+.01,.207,label,13,MUTED)
-        text(ax,x+.01,.163,value,23,TEAL,'bold')
-        text(ax,x+.01,.125,note,11,MUTED)
-    text(ax,.05,.066,'¹ 3 training seeds × 3 corruption seeds. ± sample SD; populations differ.',12,MUTED)
-    text(ax,.05,.035,'Synthetic occlusion, not real clouds. No significance claim; temporal generalisation remains difficult.',12,MUTED)
+        card(ax,x,.055,.279,.172)
+        text(ax,x+.01,.198,label,13,MUTED)
+        text(ax,x+.01,.128,value,23,TEAL,'bold')
+        text(ax,x+.01,.083,note,13,MUTED)
     fig.savefig(ROOT/'figures/hero_overview.png',dpi=150)
     fig.savefig(ROOT/'figures/hero_overview.svg',metadata={'Date':None})
+    svg=ROOT/'figures/hero_overview.svg'
+    svg.write_text('\n'.join(s.rstrip() for s in svg.read_text(encoding='utf-8').replace("font-family: 'DejaVu Sans'", "font-family: 'DejaVu Sans', Arial, sans-serif").splitlines())+'\n',encoding='utf-8')
     plt.close(fig)
 
     fig,ax=plt.subplots(figsize=(12.8,6.4),dpi=100); fig.patch.set_facecolor(INK)

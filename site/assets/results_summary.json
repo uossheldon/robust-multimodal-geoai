@@ -1,0 +1,479 @@
+{
+  "schema_version": 1,
+  "sources": [
+    "results/final_test/clean_test_results.csv",
+    "results/final_test/final_summary.json",
+    "results/s2_deeplab_weighted/metrics.json",
+    "results/s1_deeplab_weighted/metrics.json",
+    "results/s1_s2_early_fusion/metrics.json",
+    "results/occlusion_training/aggregate_results.csv",
+    "docs/TERRAMIND_VALIDATION_EVIDENCE.json"
+  ],
+  "models": [
+    {
+      "id": "s2_weighted",
+      "label": "Sentinel-2 weighted",
+      "n": 1,
+      "clean": {
+        "mean_iou": {
+          "mean": 0.16983529925346375,
+          "std": null,
+          "n": 1
+        },
+        "macro_dice": {
+          "mean": 0.2541401982307434,
+          "std": null,
+          "n": 1
+        },
+        "iou_background": {
+          "mean": 0.4824017286300659,
+          "std": null,
+          "n": 1
+        },
+        "iou_low": {
+          "mean": 0.10543219745159149,
+          "std": null,
+          "n": 1
+        },
+        "iou_mid": {
+          "mean": 0.04902729392051697,
+          "std": null,
+          "n": 1
+        },
+        "iou_high": {
+          "mean": 0.042479973286390305,
+          "std": null,
+          "n": 1
+        },
+        "binary_algae_iou": {
+          "mean": 0.45472660660743713,
+          "std": null,
+          "n": 1
+        },
+        "binary_algae_dice": {
+          "mean": 0.6251711845397949,
+          "std": null,
+          "n": 1
+        }
+      },
+      "validation": {
+        "mean": 0.22743673622608185,
+        "std": null,
+        "n": 1
+      }
+    },
+    {
+      "id": "s1_weighted",
+      "label": "Sentinel-1 weighted",
+      "n": 1,
+      "clean": {
+        "mean_iou": {
+          "mean": 0.17556245625019073,
+          "std": null,
+          "n": 1
+        },
+        "macro_dice": {
+          "mean": 0.2798900008201599,
+          "std": null,
+          "n": 1
+        },
+        "iou_background": {
+          "mean": 0.24260304868221283,
+          "std": null,
+          "n": 1
+        },
+        "iou_low": {
+          "mean": 0.3250560462474823,
+          "std": null,
+          "n": 1
+        },
+        "iou_mid": {
+          "mean": 0.0027560810558497906,
+          "std": null,
+          "n": 1
+        },
+        "iou_high": {
+          "mean": 0.13183467090129852,
+          "std": null,
+          "n": 1
+        },
+        "binary_algae_iou": {
+          "mean": 0.34240981936454773,
+          "std": null,
+          "n": 1
+        },
+        "binary_algae_dice": {
+          "mean": 0.5101420283317566,
+          "std": null,
+          "n": 1
+        }
+      },
+      "validation": {
+        "mean": 0.23491951823234558,
+        "std": null,
+        "n": 1
+      }
+    },
+    {
+      "id": "early_fusion",
+      "label": "Early fusion",
+      "n": 1,
+      "clean": {
+        "mean_iou": {
+          "mean": 0.16582275927066803,
+          "std": null,
+          "n": 1
+        },
+        "macro_dice": {
+          "mean": 0.2699992060661316,
+          "std": null,
+          "n": 1
+        },
+        "iou_background": {
+          "mean": 0.16527892649173737,
+          "std": null,
+          "n": 1
+        },
+        "iou_low": {
+          "mean": 0.3287065327167511,
+          "std": null,
+          "n": 1
+        },
+        "iou_mid": {
+          "mean": 0.026485608890652657,
+          "std": null,
+          "n": 1
+        },
+        "iou_high": {
+          "mean": 0.14281992614269257,
+          "std": null,
+          "n": 1
+        },
+        "binary_algae_iou": {
+          "mean": 0.4425654411315918,
+          "std": null,
+          "n": 1
+        },
+        "binary_algae_dice": {
+          "mean": 0.613581120967865,
+          "std": null,
+          "n": 1
+        }
+      },
+      "validation": {
+        "mean": 0.2425265908241272,
+        "std": null,
+        "n": 1
+      }
+    },
+    {
+      "id": "modality_dropout",
+      "label": "Modality dropout",
+      "n": 3,
+      "clean": {
+        "mean_iou": {
+          "mean": 0.18255490064620972,
+          "std": 0.012254475114380717,
+          "n": 3
+        },
+        "macro_dice": {
+          "mean": 0.29867178201675415,
+          "std": 0.01823636613987188,
+          "n": 3
+        },
+        "iou_background": {
+          "mean": 0.2763894697030385,
+          "std": 0.011994629713342633,
+          "n": 3
+        },
+        "iou_low": {
+          "mean": 0.24022594094276428,
+          "std": 0.036526451872582605,
+          "n": 3
+        },
+        "iou_mid": {
+          "mean": 0.04745081812143326,
+          "std": 0.008672747523283286,
+          "n": 3
+        },
+        "iou_high": {
+          "mean": 0.16615334649880728,
+          "std": 0.016021659601988012,
+          "n": 3
+        },
+        "binary_algae_iou": {
+          "mean": 0.40243037541707355,
+          "std": 0.04102009927194883,
+          "n": 3
+        },
+        "binary_algae_dice": {
+          "mean": 0.573083221912384,
+          "std": 0.04210960238818517,
+          "n": 3
+        }
+      },
+      "validation": {
+        "mean": 0.2725316087404887,
+        "std": 0.01567265858188754,
+        "n": 3
+      }
+    },
+    {
+      "id": "occlusion_trained",
+      "label": "Occlusion-trained fusion",
+      "n": 3,
+      "clean": {
+        "mean_iou": {
+          "mean": 0.1881588896115621,
+          "std": 0.029271183636416936,
+          "n": 3
+        },
+        "macro_dice": {
+          "mean": 0.30331486463546753,
+          "std": 0.0380307283490485,
+          "n": 3
+        },
+        "iou_background": {
+          "mean": 0.25418682893117267,
+          "std": 0.0721101090637928,
+          "n": 3
+        },
+        "iou_low": {
+          "mean": 0.3073779543240865,
+          "std": 0.04031487550957275,
+          "n": 3
+        },
+        "iou_mid": {
+          "mean": 0.05043525124589602,
+          "std": 0.017195326280462227,
+          "n": 3
+        },
+        "iou_high": {
+          "mean": 0.1406355102856954,
+          "std": 0.004190148738396845,
+          "n": 3
+        },
+        "binary_algae_iou": {
+          "mean": 0.4445771972338359,
+          "std": 0.029945614972951184,
+          "n": 3
+        },
+        "binary_algae_dice": {
+          "mean": 0.6151121258735657,
+          "std": 0.028925427449420157,
+          "n": 3
+        }
+      },
+      "validation": {
+        "mean": 0.26478270689646405,
+        "std": 0.008866288502156774,
+        "n": 3
+      }
+    },
+    {
+      "id": "terramind_frozen",
+      "label": "Frozen TerraMind",
+      "n": 3,
+      "clean": {
+        "mean_iou": {
+          "mean": 0.1717776507139206,
+          "std": 0.01770145679555248,
+          "n": 3
+        },
+        "macro_dice": {
+          "mean": 0.28426213065783185,
+          "std": 0.023508960539366113,
+          "n": 3
+        },
+        "iou_background": {
+          "mean": 0.20989665885766348,
+          "std": 0.016588516574689505,
+          "n": 3
+        },
+        "iou_low": {
+          "mean": 0.25567394495010376,
+          "std": 0.06043541759046996,
+          "n": 3
+        },
+        "iou_mid": {
+          "mean": 0.04489997774362564,
+          "std": 0.009361353056207635,
+          "n": 3
+        },
+        "iou_high": {
+          "mean": 0.17664004862308502,
+          "std": 0.027458633715726682,
+          "n": 3
+        },
+        "binary_algae_iou": {
+          "mean": 0.5175893704096476,
+          "std": 0.002873258364704485,
+          "n": 3
+        },
+        "binary_algae_dice": {
+          "mean": 0.6821173032124838,
+          "std": 0.0024973241283509614,
+          "n": 3
+        }
+      },
+      "validation": {
+        "mean": 0.2771475613117218,
+        "std": 0.013753754334765462,
+        "n": 3
+      }
+    }
+  ],
+  "robustness": [
+    {
+      "model": "modality_dropout",
+      "condition": "clean",
+      "mean_iou": {
+        "mean": 0.18255490064620972,
+        "std": 0.012254475114380717,
+        "n": 3
+      }
+    },
+    {
+      "model": "modality_dropout",
+      "condition": "missing_s1",
+      "mean_iou": {
+        "mean": 0.11411387970050176,
+        "std": 0.016638418169806796,
+        "n": 3
+      }
+    },
+    {
+      "model": "modality_dropout",
+      "condition": "missing_s2",
+      "mean_iou": {
+        "mean": 0.16903804739316305,
+        "std": 0.0176322363109095,
+        "n": 3
+      }
+    },
+    {
+      "model": "modality_dropout",
+      "condition": "occlusion_10",
+      "mean_iou": {
+        "mean": 0.18396078877978855,
+        "std": 0.0036804502072252596,
+        "n": 9
+      }
+    },
+    {
+      "model": "modality_dropout",
+      "condition": "occlusion_30",
+      "mean_iou": {
+        "mean": 0.17570536335309347,
+        "std": 0.004016972845128737,
+        "n": 9
+      }
+    },
+    {
+      "model": "modality_dropout",
+      "condition": "occlusion_50",
+      "mean_iou": {
+        "mean": 0.16842092904779646,
+        "std": 0.003849843164530961,
+        "n": 9
+      }
+    },
+    {
+      "model": "modality_dropout",
+      "condition": "occlusion_70",
+      "mean_iou": {
+        "mean": 0.16302795045905644,
+        "std": 0.005510788998570483,
+        "n": 9
+      }
+    },
+    {
+      "model": "occlusion_trained",
+      "condition": "clean",
+      "mean_iou": {
+        "mean": 0.1881588896115621,
+        "std": 0.029271183636416936,
+        "n": 3
+      }
+    },
+    {
+      "model": "occlusion_trained",
+      "condition": "missing_s1",
+      "mean_iou": {
+        "mean": 0.12040992329518001,
+        "std": 0.026400355365775553,
+        "n": 3
+      }
+    },
+    {
+      "model": "occlusion_trained",
+      "condition": "missing_s2",
+      "mean_iou": {
+        "mean": 0.19934015472730002,
+        "std": 0.01639548330047033,
+        "n": 3
+      }
+    },
+    {
+      "model": "occlusion_trained",
+      "condition": "occlusion_10",
+      "mean_iou": {
+        "mean": 0.21729491154352823,
+        "std": 0.005567478567996476,
+        "n": 9
+      }
+    },
+    {
+      "model": "occlusion_trained",
+      "condition": "occlusion_30",
+      "mean_iou": {
+        "mean": 0.2233190122577879,
+        "std": 0.013087764972746834,
+        "n": 9
+      }
+    },
+    {
+      "model": "occlusion_trained",
+      "condition": "occlusion_50",
+      "mean_iou": {
+        "mean": 0.20839657386144003,
+        "std": 0.019118741503177102,
+        "n": 9
+      }
+    },
+    {
+      "model": "occlusion_trained",
+      "condition": "occlusion_70",
+      "mean_iou": {
+        "mean": 0.2122331957022349,
+        "std": 0.011498864700686909,
+        "n": 9
+      }
+    }
+  ],
+  "occlusion_rates": [
+    0,
+    10,
+    30,
+    50,
+    70
+  ],
+  "training_seeds": [
+    42,
+    7,
+    123
+  ],
+  "corruption_seeds": [
+    101,
+    202,
+    303
+  ],
+  "test_dates": [
+    "2025-09-08",
+    "2025-09-21"
+  ],
+  "sd_populations": {
+    "clean_missing": "3 training seeds",
+    "optical_occlusion": "9 pooled training-seed × corruption-seed runs"
+  }
+}

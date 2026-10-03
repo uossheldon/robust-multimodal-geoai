@@ -19,120 +19,118 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
   <script src="theme.js" defer></script>
+  <script src="explorer.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="masthead wrap">
   <a class="wordmark" href="#main"><span class="mark" aria-hidden="true">↗</span> GEOAI <span class="wordmark-sub">/ RESEARCH</span></a>
-  <nav aria-label="Main navigation"><a href="#results">Results</a><a href="#methods">Methods</a><a href="#reproduction">Reproduce</a><a href="https://github.com/uossheldon/robust-multimodal-geoai">GitHub ↗</a></nav>
+  <nav aria-label="Main navigation"><a href="#explore">Explore</a><a href="#results">Results</a><a href="#reproduction">Reproduce</a><a href="https://github.com/uossheldon/robust-multimodal-geoai">GitHub ↗</a></nav>
   <button id="theme-toggle" class="theme-toggle" type="button" hidden>Theme: auto</button>
 </header>
 <main id="main">
-  <section class="hero wrap" aria-labelledby="title">
-    <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Independent research · completed study</div>
-    <div class="hero-grid">
-      <div>
-        <h1 id="title">When optical<br>information<br><em>disappears.</em></h1>
-        <p class="deck">Robust multimodal GeoAI<br>for algal-bloom mapping.</p>
-      </div>
-      <div class="hero-aside">
-        <p class="kicker">THE RESEARCH QUESTION</p>
-        <p class="question">How robust are multimodal GeoAI segmentation models when optical satellite imagery is degraded or one sensing modality is unavailable?</p>
-        <p class="muted">Sentinel-1 radar + Sentinel-2 optical. Four algae-severity classes. A frozen comparison across two September dates.</p>
-        <div class="tags" aria-label="Research technologies"><span>PyTorch</span><span>Rasterio</span><span>TerraMind</span><span>3 training seeds</span></div>
-        <a class="button" href="#results">Explore the final results <span aria-hidden="true">↓</span></a>
-      </div>
+<section class="hero wrap" aria-labelledby="title">
+  <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Independent research · completed study</div>
+  <div class="hero-grid">
+    <div><h1 id="title">When optical<br>information<br><em>disappears.</em></h1><p class="deck">Robust multimodal GeoAI<br>for algal-bloom mapping.</p></div>
+    <div class="hero-aside"><p class="kicker">The research question</p><p class="question">How robust are multimodal GeoAI segmentation models when optical satellite imagery is degraded or one sensing modality is unavailable?</p>
+      <p class="muted">Two sensors. Four algae-severity classes. A frozen comparison across two September dates.</p>
+      <div class="tags" aria-label="Research topics"><span>Sentinel-1</span><span>Sentinel-2</span><span>TerraMind</span><span>Robust multimodal learning</span></div>
+      <a class="button" href="#explore">Explore the results <span aria-hidden="true">↓</span></a>
     </div>
-    <div class="headline-grid" aria-label="Headline held-out TEST findings">
-      <article><span class="small-label">01 / CLEAN TEST</span><strong data-headline="clean">0.1882 <small>± 0.0293</small></strong><p>Occlusion-trained fusion<br><b>Macro mIoU · 3 training seeds</b></p></article>
-      <article><span class="small-label">02 / 70% SIMULATED OCCLUSION</span><strong data-headline="occlusion">0.2122 <small>± 0.0115</small></strong><p>Occlusion-trained fusion<br><b>Macro mIoU · 9 pooled runs¹</b></p></article>
-      <article><span class="small-label">03 / CLEAN FOUNDATION MODEL</span><strong data-headline="terramind">0.6821 <small>± 0.0025</small></strong><p>Frozen TerraMind<br><b>Binary algae Dice · 3 training seeds</b></p></article>
+  </div>
+  <div class="headline-grid" aria-label="Headline held-out TEST findings">
+    <article><span class="small-label">01 / Four-class TEST</span><strong data-headline="clean">0.1882 <small>± 0.0293</small></strong><p>Occlusion-trained fusion<br><b>Macro mIoU</b></p></article>
+    <article><span class="small-label">02 / 70% optical occlusion</span><strong data-headline="occlusion">0.2122 <small>± 0.0115</small></strong><p>Occlusion-trained fusion<br><b>Macro mIoU</b></p></article>
+    <article><span class="small-label">03 / Binary algae TEST</span><strong data-headline="terramind">0.6821 <small>± 0.0025</small></strong><p>Frozen TerraMind<br><b>Binary algae Dice</b></p></article>
+  </div>
+  <p class="caption">Multi-seed results show mean ± sample SD; see <a href="#evaluation-notes">evaluation notes</a> for sampling and scoring qualifications.</p>
+</section>
+
+<section id="methods" class="section wrap" aria-labelledby="study-title">
+  <div class="section-heading"><span class="section-number">01</span><div><p class="kicker">Study design</p><h2 id="study-title">Two sensors. One geographic grid.</h2></div></div>
+  <p class="narrow">Sentinel-2 optical RGB and Sentinel-1 VV/VH radar are aligned to the same 224×224 tiles over Lough Neagh. DeepLab baselines test optical, SAR and early fusion; modality dropout and simulated optical occlusion test resilience. Frozen TerraMind provides a foundation-model comparison.</p>
+  <figure class="overview"><a href="assets/hero_overview.svg" aria-label="Open study schematic at full resolution"><img src="assets/hero_overview.svg" width="1440" height="960" alt="Sentinel-2 and Sentinel-1 feed multimodal GeoAI for four-class algae mapping, with missing-sensor and simulated-occlusion tests." loading="lazy"></a><figcaption>Study schematic · <a href="assets/hero_overview.png">PNG</a> / <a href="assets/hero_overview.svg">SVG</a></figcaption></figure>
+  <div class="split-grid"><div><strong>621</strong><span>Train tiles · 8 dates</span></div><div><strong>111</strong><span>Validation tiles · 2 dates</span></div><div><strong>114</strong><span>TEST tiles · 2 dates</span></div></div>
+  <p class="caption">Fixed date split · TEST: 8 &amp; 21 September 2025 · Background / Low algae / Mid algae / High algae; label 255 ignored.</p>
+  <details><summary>Methods and fixed split</summary><p>DeepLabV3-MobileNetV3-Large uses RGB, VV/VH, or five-channel early fusion. All selected DeepLab models use the same class-weighted loss. Controlled training keeps 10 epochs, batch size 8, optimizer policy and spatial augmentations fixed. Modality dropout keeps both sensors for 50% of samples and removes each sensor for 25%; occlusion training additionally corrupts half of intact samples, with fractions sampled from 10–70%.</p><p>Frozen <code>terramind_v1_tiny</code> uses RGB + S1RTC and a lightweight four-class decoder, trained for 10 epochs at batch size 4. Rasterio uses the B04 grid, bilinear imagery resampling and nearest-neighbour labels; each modality is normalized separately.</p><p>TRAIN: 2025-01-31, 03-12, 04-08, 04-09, 05-16, 05-18, 05-21, 08-12. Validation: 2025-01-01 and 2025-06-20. TEST: 2025-09-08 and 2025-09-21.</p></details>
+</section>
+
+<section id="findings" class="section tinted" aria-labelledby="findings-title"><div class="wrap">
+  <div class="section-heading"><span class="section-number">02</span><div><p class="kicker">Key findings</p><h2 id="findings-title">Resilience is only part of the problem.</h2></div></div>
+  <div class="finding-grid"><article><span class="kicker">01 / Resilience</span><h3>Robust training helps under optical degradation.</h3><p>Occlusion-aware training increased resilience to severe simulated optical degradation relative to modality dropout alone.</p></article><article><span class="kicker">02 / Task matters</span><h3>Binary detection and severity mapping differ.</h3><p>Frozen TerraMind produced strong binary algae detection, without consistently stronger four-class temporal generalisation.</p></article><article><span class="kicker">03 / Time matters</span><h3>Every model lost ground in September.</h3><p>All evaluated models lost four-class performance from validation to the held-out dates, highlighting temporal/domain shift.</p></article></div>
+</div></section>
+
+<section id="explore" class="section wrap" aria-labelledby="explore-title">
+  <div class="section-heading"><span class="section-number">03</span><div><p class="kicker">Frozen measurements</p><h2 id="explore-title">Explore the results</h2></div></div>
+  <p id="explorer-fallback" class="narrow">The static figures and <a href="#results">results table</a> below contain the full comparison. Interactive controls appear when JavaScript is available.</p>
+  <div id="explorer" hidden>
+    <div class="mode-controls" role="group" aria-label="Results explorer mode"><button type="button" data-mode="optical" aria-pressed="true">Optical robustness</button><button type="button" data-mode="comparison" aria-pressed="false">Model comparison</button><button type="button" data-mode="temporal" aria-pressed="false">Temporal generalisation</button></div>
+    <div class="explorer-controls">
+      <label id="rate-control">Simulated optical occlusion <select id="occlusion-rate"><option value="0">0% (clean)</option><option value="10">10%</option><option value="30">30%</option><option value="50">50%</option><option value="70">70%</option></select></label>
+      <label id="metric-control" hidden>Metric <select id="comparison-metric"><option value="mean_iou">Macro mIoU</option><option value="macro_dice">Macro Dice</option><option value="binary_algae_dice">Binary algae Dice</option></select></label>
+      <label id="model-control" hidden>Model <select id="temporal-model"></select></label>
     </div>
-    <p class="caption">± sample SD, not confidence intervals. ¹ Three training seeds × three corruption seeds. These variability populations differ. No statistical-significance claim; binary algae detection is distinct from four-class severity quality.</p>
-  </section>
+    <p id="explorer-context" class="caption"></p>
+    <div class="figure-scroll interactive-chart" tabindex="0" role="region" aria-label="Results visualization; scroll horizontally on narrow screens"><svg id="explorer-chart" viewBox="0 0 900 420" role="img" aria-labelledby="explorer-chart-title"><title id="explorer-chart-title">Frozen results visualization</title></svg></div>
+    <div id="explorer-values" aria-live="polite" aria-atomic="true"></div>
+    <p id="explorer-note" class="caption"></p>
+    <p class="caption"><a href="#evaluation-notes">Sampling and evaluation notes</a> · <a href="assets/results_summary.json">Frozen aggregate data (JSON)</a></p>
+  </div>
+</section>
 
-  <section id="setup" class="section wrap">
-    <div class="section-heading"><span class="section-number">01</span><div><p class="kicker">THE SETUP</p><h2>Two sensors. One geographic grid.</h2></div></div>
-    <div class="two-col">
-      <p class="lead">Optical and radar offer different observations. Their combination still has to survive missing information.</p>
-      <p>A regional Lough Neagh dataset covers 12 acquisition dates in 2025. Rasterio aligns Sentinel-2 <b>B04/B03/B02</b> and Sentinel-1 <b>VV/VH GAMMA0_TERRAIN dB</b> to B04. Imagery uses bilinear resampling; masks use nearest-neighbour only. The fixed manifest reads 224×224 tiles on demand.</p>
-    </div>
-    <figure class="overview"><a href="assets/hero_overview.svg" aria-label="Open the research overview at full resolution"><img src="assets/hero_overview.svg" width="1440" height="960" alt="Sentinel-2 optical and Sentinel-1 SAR feed multimodal GeoAI for background, low, mid and high algae segmentation; sensor stress tests lead to modality dropout, occlusion-aware training and the frozen September test." loading="lazy"></a><figcaption>Original schematic, built from saved summaries. No source imagery or labels are displayed. <a href="assets/hero_overview.png">Download PNG</a> · <a href="assets/hero_overview.svg">Download vector</a></figcaption></figure>
-    <div class="split-grid"><div><strong>621</strong><span>TRAIN TILES · 8 DATES</span></div><div><strong>111</strong><span>VALIDATION TILES · 2 DATES</span></div><div><strong>114</strong><span>TEST TILES · 2 DATES</span></div></div>
-    <p class="caption">Targets: 0 background · 1 low algae · 2 mid algae · 3 high algae · 255 ignore. TEST: 2025-09-08 and 2025-09-21. Date separation does not imply geographic separation.</p>
-    <details><summary>View the fixed date split and test-access qualification</summary><p><b>Train:</b> 2025-01-31, 2025-03-12, 2025-04-08, 2025-04-09, 2025-05-16, 2025-05-18, 2025-05-21, 2025-08-12.<br><b>Validation:</b> 2025-01-01, 2025-06-20.<br><b>TEST:</b> 2025-09-08, 2025-09-21.</p><p>An earlier unweighted S2 TEST evaluation occurred in Phase 2D and is preserved. The final Phase 7 comparison followed frozen subsequent development; no post-Phase-7 tuning or checkpoint selection occurred. It was not the first historical TEST access.</p></details>
-  </section>
+<section id="results" class="section wrap" aria-labelledby="results-title">
+  <div class="section-heading"><span class="section-number">04</span><div><p class="kicker">Final comparison</p><h2 id="results-title">Held-out September TEST</h2></div></div>
+  <p class="narrow">Occlusion-trained fusion has the numerically highest clean four-class Macro mIoU; Frozen TerraMind has the highest Binary algae Dice.</p>
+  <figure><div class="figure-scroll" tabindex="0" role="region" aria-label="Clean TEST performance figure; scroll on narrow screens"><a href="assets/final_clean_model_comparison.svg"><img src="assets/final_clean_model_comparison.svg" width="1300" height="620" alt="Held-out September test performance, separating four-class Macro mIoU and Macro Dice from Binary algae Dice." loading="lazy"></a></div><figcaption>Four-class segmentation and binary detection shown separately. <a href="assets/final_clean_model_comparison.png">PNG</a> / <a href="assets/final_clean_model_comparison.svg">SVG</a><span class="mobile-hint"> · Swipe or scroll wide figures to read labels.</span></figcaption></figure>
+  <details><summary>Clean TEST values · all six models</summary><div class="table-scroll" tabindex="0" role="region" aria-label="Clean TEST results; scroll horizontally on small screens"><table><caption>Clean TEST · 114 tiles · 8 &amp; 21 September 2025</caption><thead><tr><th scope="col">Model</th><th scope="col">Runs</th><th scope="col">Macro mIoU</th><th scope="col">Macro Dice</th><th scope="col">Binary algae Dice</th></tr></thead><tbody><tr data-model="s2_weighted"><th scope="row">Sentinel-2 weighted</th><td>Single run</td><td data-metric="mean_iou">0.1698</td><td data-metric="macro_dice">0.2541</td><td data-metric="binary_algae_dice">0.6252</td></tr>
+<tr data-model="s1_weighted"><th scope="row">Sentinel-1 weighted</th><td>Single run</td><td data-metric="mean_iou">0.1756</td><td data-metric="macro_dice">0.2799</td><td data-metric="binary_algae_dice">0.5101</td></tr>
+<tr data-model="early_fusion"><th scope="row">Early fusion</th><td>Single run</td><td data-metric="mean_iou">0.1658</td><td data-metric="macro_dice">0.2700</td><td data-metric="binary_algae_dice">0.6136</td></tr>
+<tr data-model="modality_dropout"><th scope="row">Modality dropout</th><td>3 seeds</td><td data-metric="mean_iou">0.1826 ± 0.0123</td><td data-metric="macro_dice">0.2987 ± 0.0182</td><td data-metric="binary_algae_dice">0.5731 ± 0.0421</td></tr>
+<tr data-model="occlusion_trained"><th scope="row">Occlusion-trained fusion</th><td>3 seeds</td><td data-metric="mean_iou">0.1882 ± 0.0293</td><td data-metric="macro_dice">0.3033 ± 0.0380</td><td data-metric="binary_algae_dice">0.6151 ± 0.0289</td></tr>
+<tr data-model="terramind_frozen"><th scope="row">Frozen TerraMind</th><td>3 seeds</td><td data-metric="mean_iou">0.1718 ± 0.0177</td><td data-metric="macro_dice">0.2843 ± 0.0235</td><td data-metric="binary_algae_dice">0.6821 ± 0.0025</td></tr></tbody></table></div><p><a href="assets/clean_test_results.csv">Saved clean TEST summary (CSV)</a></p></details>
+  <figure><div class="figure-scroll" tabindex="0" role="region" aria-label="Per-class IoU figure; scroll on narrow screens"><a href="assets/final_per_class_iou.svg"><img src="assets/final_per_class_iou.svg" width="1150" height="640" alt="Per-class IoU for Background, Low algae, Mid algae and High algae across all six models, with numeric values and three-seed SDs." loading="lazy"></a></div><figcaption>Mid-algae segmentation remains weak across methods. <a href="assets/final_per_class_iou.png">PNG</a> / <a href="assets/final_per_class_iou.svg">SVG</a></figcaption></figure>
+</section>
 
-  <section id="methods" class="section tinted">
-    <div class="wrap">
-      <div class="section-heading"><span class="section-number">02</span><div><p class="kicker">CONTROLLED PROGRESSION</p><h2>Fusion is a starting point.<br>Robustness must be tested.</h2></div></div>
-      <div class="method-grid">
-        <article><span class="small-label">BASELINES</span><h3>Optical, SAR &amp; early fusion</h3><p>DeepLabV3-MobileNetV3-Large takes RGB, VV/VH, or five concatenated channels. RGB reflectance and SAR are normalized separately. Validation selects the weighted S2 baseline and all final checkpoints.</p></article>
-        <article><span class="small-label">DIAGNOSIS / VALIDATION</span><h3>Naive fusion is brittle</h3><p class="stat-line">0.2425 <span>→</span> 0.0133</p><p>Clean to 70% simulated optical occlusion, macro mIoU for one frozen fusion model. The corruption score averages three fixed mask seeds; this is validation evidence, not TEST.</p></article>
-        <article><span class="small-label">INTERVENTION 01</span><h3>Modality dropout</h3><p>Keep both sensors for 50% of training samples, zero S1 for 25%, or zero S2 for 25%. Missing information is represented by zeros after normalization; both modalities are never dropped together.</p></article>
-        <article><span class="small-label">INTERVENTION 02</span><h3>Occlusion-aware training</h3><p>Keep the dropout policy. Occlude half of intact both-modality samples, with a fraction uniformly sampled from 10–70%. Coherent irregular masks zero normalized RGB only. These are not real clouds.</p></article>
-      </div>
-      <p class="caption">Controlled DeepLab experiments: same architecture, split, 10 epochs, batch size 8, augmentations, optimizer policy and class-weighted loss. Training seeds: 42, 7, 123. Corruption seeds: 101, 202, 303.</p>
-    </div>
-  </section>
+<section id="robustness" class="section tinted" aria-labelledby="robustness-title"><div class="wrap">
+  <div class="section-heading"><span class="section-number">05</span><div><p class="kicker">Optical degradation &amp; missing sensors</p><h2 id="robustness-title">Training for missing information.</h2></div></div>
+  <p class="narrow">Occlusion-trained fusion retains numerically higher Macro mIoU at every measured optical-occlusion level. Complete loss of Sentinel-1 remains difficult for both robust methods.</p>
+  <figure><div class="figure-scroll" tabindex="0" role="region" aria-label="Robustness figure; scroll on narrow screens"><a href="assets/final_robustness_curves.svg"><img src="assets/final_robustness_curves.svg" width="1300" height="570" alt="Measured optical-occlusion rates of 0, 10, 30, 50 and 70 percent, plus separate missing-S1 and missing-S2 comparisons, for two robust fusion models." loading="lazy"></a></div><figcaption>Measured conditions only; no interpolation between optical-occlusion rates. <a href="assets/final_robustness_curves.png">PNG</a> / <a href="assets/final_robustness_curves.svg">SVG</a></figcaption></figure>
+</div></section>
 
-  <section id="results" class="section wrap">
-    <div class="section-heading"><span class="section-number">03</span><div><p class="kicker">FROZEN FINAL COMPARISON</p><h2>What held up in September?</h2></div></div>
-    <p class="lead narrow">Occlusion-trained fusion has the numerically highest clean four-class mIoU. TerraMind has the highest binary algae Dice. Neither finding establishes universal superiority.</p>
-    <div class="table-scroll" role="region" aria-label="Clean held-out test results; scroll horizontally on small screens" tabindex="0">
-      <table><caption>Clean TEST · 114 tiles · 8 &amp; 21 September 2025</caption><thead><tr><th scope="col">Model</th><th scope="col">Runs</th><th scope="col">Macro mIoU</th><th scope="col">Macro Dice</th><th scope="col">Binary algae Dice</th></tr></thead><tbody>
-        <tr data-model="s2_weighted"><th scope="row">S2 weighted</th><td>Single</td><td data-metric="mean_iou">0.1698</td><td data-metric="macro_dice">0.2541</td><td data-metric="binary_algae_dice">0.6252</td></tr>
-        <tr data-model="s1_weighted"><th scope="row">S1 weighted</th><td>Single</td><td data-metric="mean_iou">0.1756</td><td data-metric="macro_dice">0.2799</td><td data-metric="binary_algae_dice">0.5101</td></tr>
-        <tr data-model="early_fusion"><th scope="row">Naive early fusion</th><td>Single</td><td data-metric="mean_iou">0.1658</td><td data-metric="macro_dice">0.2700</td><td data-metric="binary_algae_dice">0.6136</td></tr>
-        <tr data-model="modality_dropout"><th scope="row">Modality dropout</th><td>3 seeds</td><td data-metric="mean_iou">0.1826 ± 0.0123</td><td data-metric="macro_dice">0.2987 ± 0.0182</td><td data-metric="binary_algae_dice">0.5731 ± 0.0421</td></tr>
-        <tr data-model="occlusion_trained" class="highlight"><th scope="row">Dropout + occlusion training</th><td>3 seeds</td><td data-metric="mean_iou">0.1882 ± 0.0293</td><td data-metric="macro_dice">0.3033 ± 0.0380</td><td data-metric="binary_algae_dice">0.6151 ± 0.0289</td></tr>
-        <tr data-model="terramind_frozen"><th scope="row">Frozen TerraMind</th><td>3 seeds</td><td data-metric="mean_iou">0.1718 ± 0.0177</td><td data-metric="macro_dice">0.2843 ± 0.0235</td><td data-metric="binary_algae_dice">0.6821 ± 0.0025</td></tr>
-      </tbody></table>
-    </div>
-    <p class="caption">± sample SD over training seeds. S2 scores 3,474,284 valid pixels; SAR/fusion/TerraMind score 3,169,093 because invalid SAR targets are ignored. This is not a perfectly pixel-matched comparison. <a href="assets/clean_test_results.csv" download>Download the saved clean summary CSV ↓</a></p>
-    <figure><a href="assets/final_per_class_iou.png"><img src="assets/final_per_class_iou.png" width="1800" height="1152" loading="lazy" alt="Per-class TEST IoU for six models. Mid-algae IoU is low across all models; S1 reaches 0.0028. TerraMind high-algae IoU is 0.1766 plus or minus 0.0275."></a><figcaption>Severity quality remains limited even where binary algae detection is stronger. Open the figure for full-resolution values.</figcaption></figure>
-  </section>
+<section id="generalisation" class="section wrap" aria-labelledby="shift-title">
+  <div class="section-heading"><span class="section-number">06</span><div><p class="kicker">The remaining challenge</p><h2 id="shift-title">Every model lost ground over time.</h2></div></div>
+  <p class="narrow">Four-class performance declined on the September dates for all six methods. The result is consistent with temporal/domain shift within one region; it does not establish geographic generalisation or its physical cause.</p>
+  <figure><div class="figure-scroll" tabindex="0" role="region" aria-label="Validation-to-test figure; scroll on narrow screens"><a href="assets/final_temporal_generalisation.svg"><img src="assets/final_temporal_generalisation.svg" width="1080" height="620" alt="Paired validation and TEST Macro mIoU dots; TEST is lower for every model." loading="lazy"></a></div><figcaption>Same fixed temporal split; each method keeps its frozen validation-selected checkpoint. <a href="assets/final_temporal_generalisation.png">PNG</a> / <a href="assets/final_temporal_generalisation.svg">SVG</a></figcaption></figure>
+</section>
 
-  <section id="robustness" class="section wrap">
-    <div class="section-heading"><span class="section-number">04</span><div><p class="kicker">OPTICAL DEGRADATION &amp; MISSING SENSORS</p><h2>Robustness, with qualifications.</h2></div></div>
-    <figure><a href="assets/final_robustness_curves.png"><img src="assets/final_robustness_curves.png" width="2160" height="1008" loading="lazy" alt="TEST robustness curves: dropout mIoU drops to 0.1630 at 70% simulated occlusion; occlusion-trained fusion reaches 0.2122. Complete S1 loss is difficult for both models."></a><figcaption>Clean/missing-sensor error bars: SD over 3 training seeds. Optical-occlusion error bars: pooled SD over 9 training-seed × corruption-seed runs. No significance claim.</figcaption></figure>
-    <div class="two-col"><div><h3>The observation</h3><p>At 70% occlusion, dropout scores <b>0.1630 ± 0.0055</b> mIoU versus <b>0.2122 ± 0.0115</b> for occlusion-trained fusion. Missing S1 gives 0.1141 ± 0.0166 / 0.1204 ± 0.0264; missing S2 gives 0.1690 ± 0.0176 / 0.1993 ± 0.0164, respectively.</p></div><div><h3>The interpretation</h3><p>The non-monotonic curve does not mean hiding imagery adds information. Corruption-aware training changes prediction behaviour and class balance under the September distribution. These controlled perturbations do not establish real-cloud performance or physical causation.</p></div></div>
-  </section>
+<section id="secondary" class="section tinted" aria-labelledby="secondary-title"><div class="wrap">
+  <div class="section-heading"><span class="section-number">07</span><div><p class="kicker">Foundation models &amp; uncertainty</p><h2 id="secondary-title">Different strengths. Persistent limits.</h2></div></div>
+  <div class="two-col"><article><h3>Frozen TerraMind</h3><p>A frozen RGB + S1RTC backbone with a lightweight decoder achieved strong validation segmentation and binary TEST detection. Its four-class TEST performance did not consistently exceed the conventional models. TerraMind robustness was not evaluated.</p></article><article><h3>Ensemble uncertainty</h3><p>Probability ensembling improved validation calibration, but error-detection AUROC remained modest and missing-modality behaviour inconsistent. Better calibration did not establish reliable failure detection.</p></article></div>
+</div></section>
 
-  <section id="terramind" class="section tinted"><div class="wrap">
-    <div class="section-heading"><span class="section-number">05</span><div><p class="kicker">FOUNDATION-MODEL BENCHMARK</p><h2>Frozen TerraMind.<br>A different trade-off.</h2></div></div>
-    <div class="two-col"><p class="lead">Strong validation segmentation and binary TEST discrimination, without consistent four-class superiority.</p><div><p><code>terramind_v1_tiny</code> receives RGB + S1RTC. The pretrained backbone stays frozen; a lightweight decoder turns its final 14×14 feature map into four-class 224×224 logits.</p><p>Three-seed validation mIoU: <b>0.2771 ± 0.0138</b>. TEST mIoU: <b>0.1718 ± 0.0177</b>. TEST binary algae Dice: <b>0.6821 ± 0.0025</b>. Completed checkpoint metadata supports the validation summary; older partial exports remain historical. This is not full fine-tuning, and TerraMind robustness was not evaluated.</p></div></div>
-  </div></section>
+<section id="notes" class="section wrap" aria-labelledby="notes-title">
+  <div class="section-heading"><span class="section-number">08</span><div><p class="kicker">Interpreting the evidence</p><h2 id="notes-title">Evaluation notes &amp; limitations</h2></div></div>
+  <p class="narrow">This is a small regional study with two September TEST dates, severe class imbalance and limited mid-algae segmentation. Temporal separation does not establish geographic generalisation. Uncertainty is diagnostic, not a reliable safety mechanism.</p>
+  <details id="evaluation-notes"><summary>Evaluation notes</summary><ul>
+    <li>Clean multi-seed and missing-modality results use sample SD across training seeds 42, 7 and 123. Conventional baselines are single runs without a seed SD estimate.</li>
+    <li>Optical-occlusion TEST summaries pool 3 training seeds × corruption seeds 101, 202 and 303: 9 runs. Their SDs describe a different population from clean/missing results; neither is a confidence interval. Validation robustness summaries average corruption within each training seed before calculating SD.</li>
+    <li>Sentinel-2 evaluates 3,474,284 valid pixels; SAR/fusion/TerraMind evaluate 3,169,093 because invalid SAR targets are ignored. The comparison is not perfectly pixel-matched.</li>
+    <li>Simulated optical occlusion is not measured real cloud cover. Missing/occluded normalized channels are zeroed. Non-monotonic scores do not imply that removing optical information improves imagery.</li>
+    <li>Earlier Phase 2D unweighted Sentinel-2 TEST access exists and is preserved. Phase 7 followed frozen development and validation selection; no post-Phase-7 tuning or checkpoint selection occurred. It was not the first historical TEST access.</li>
+    <li>No statistical-significance test establishes model superiority. Binary algae detection is distinct from four-class severity mapping.</li>
+    <li>Completed checkpoint metadata supports the three-seed TerraMind validation summary; older partial exports are historical. Phase 5B single-model entropy was scored against ensemble correctness, limiting direct failure-detection comparisons.</li>
+  </ul><p><a href="https://github.com/uossheldon/robust-multimodal-geoai/blob/main/docs/SCIENTIFIC_AUDIT.md">Full scientific audit ↗</a> · <a href="https://github.com/uossheldon/robust-multimodal-geoai/blob/main/docs/FINAL_TEST_RESULTS.md">Final TEST results ↗</a></p></details>
+  <p class="rights-note"><strong>Presentation assets only.</strong> This site uses original schematics and aggregate metrics. Source imagery, labels and checkpoints are not redistributed. <a href="https://github.com/uossheldon/robust-multimodal-geoai/blob/main/docs/DATA_PROVENANCE.md">Data provenance and licensing ↗</a>. Raster-derived imagery remains withheld pending licensing review; no software or data license is asserted.</p>
+</section>
 
-  <section id="generalisation" class="section wrap">
-    <div class="section-heading"><span class="section-number">06</span><div><p class="kicker">THE MAIN REMAINING CHALLENGE</p><h2>Every model lost ground over time.</h2></div></div>
-    <div class="shift-grid"><article><p>MODALITY DROPOUT</p><strong>0.2725 <span>→</span> 0.1826</strong></article><article><p>OCCLUSION-TRAINED FUSION</p><strong>0.2648 <span>→</span> 0.1882</strong></article><article><p>FROZEN TERRAMIND</p><strong>0.2771 <span>→</span> 0.1718</strong></article></div>
-    <p class="caption">Validation → TEST macro mIoU; three-seed means shown. Full SDs appear in the results and source documentation.</p>
-    <div class="two-col"><p>All conventional baselines also declined: S2 0.2274 → 0.1698, S1 0.2349 → 0.1756, and naive fusion 0.2425 → 0.1658 (single runs). These drops are consistent with substantial temporal/domain shift.</p><p>TerraMind's per-date mIoU was 0.0965 ± 0.0433 on September 8 and 0.2335 ± 0.0100 on September 21. Two dates in one region are insufficient to establish broad generalisation. These observations prompted no post-TEST changes.</p></div>
-  </section>
-
-  <section id="uncertainty" class="section wrap">
-    <div class="section-heading"><span class="section-number">07</span><div><p class="kicker">SECONDARY VALIDATION ANALYSIS</p><h2>Better calibration is not reliable failure detection.</h2></div></div>
-    <div class="two-col"><p>For the occlusion-trained models, probability ensembling reduced clean validation ECE from <b>0.2019 to 0.1757</b>, NLL from 1.1407 to 1.0680 and Brier from 0.6688 to 0.6436, compared with mean individual-model diagnostics.</p><p>Disagreement AUROC was only <b>0.5984</b> at 70% occlusion and 0.3897 with S1 missing. Missing-modality behaviour was inconsistent. Softmax entropy is not automatically calibrated uncertainty; the project does not claim reliable failure detection.</p></div>
-    <details><summary>Uncertainty comparison scope</summary><p>Phase 5 uses validation data and corruption seed 101, without calibration fitting. The ensemble comparison's single-model entropy score is measured against ensemble correctness, which limits direct single-model versus ensemble error-detection claims. The full audit preserves that distinction.</p></details>
-  </section>
-
-  <section id="limitations" class="section tinted"><div class="wrap">
-    <div class="section-heading"><span class="section-number">08</span><div><p class="kicker">BOUNDARIES OF THE EVIDENCE</p><h2>What this study does not establish.</h2></div></div>
-    <ul class="limitations"><li>A small regional dataset and only two September TEST dates limit temporal and geographic claims.</li><li>Severe class imbalance, particularly high algae, and low mid-class IoU limit severity mapping.</li><li>Synthetic optical occlusion is not measured real cloud cover, haze, shadows or cloud-mask error.</li><li>Earlier Phase 2D TEST access and unequal valid-pixel support qualify the final comparison.</li><li>Three-seed variation is not statistical significance; frozen TerraMind is not full fine-tuning.</li><li>Uncertainty error detection remains modest and inconsistent. Data/label provenance and derived-figure rights remain unresolved.</li></ul>
-  </div></section>
-
-  <section id="reproduction" class="section wrap">
-    <div class="section-heading"><span class="section-number">09</span><div><p class="kicker">TRACEABLE, FROZEN RESULTS</p><h2>Read the evidence.<br>Reproduce the presentation.</h2></div></div>
-    <div class="two-col"><div><p>The repository contains the fixed split, raster pipelines, model adapters, experiment code and small result summaries. TerraMind's documented Colab workflow uses local <code>/content</code> storage, a configurable data root, a frozen backbone, batch size 4 and 10 epochs.</p><p>Original data, TIFFs, ZIPs, labels, checkpoints and model caches are not distributed. Obtain them separately under their source terms. Legacy DeepLab path handling and incomplete historical environment locks limit portability.</p></div><div class="code-card"><span class="small-label">STATIC SITE ONLY · NO MODEL EXECUTION</span><pre><code>python scripts/check_presentation.py
-python scripts/build_site.py
-python -m http.server 8000 \
-  --bind 127.0.0.1 --directory .site-build</code></pre><p>Only reviewed static files enter the site artifact. No GPU, dataset, checkpoint, framework install or inference is required.</p></div></div>
-    <div class="link-row"><a class="button" href="https://github.com/uossheldon/robust-multimodal-geoai">Repository ↗</a><a href="https://github.com/uossheldon/robust-multimodal-geoai/blob/main/docs/SCIENTIFIC_AUDIT.md">Scientific audit ↗</a><a href="https://github.com/uossheldon/robust-multimodal-geoai/blob/main/docs/REPRODUCTION.md">Reproduction guide ↗</a></div>
-    <p class="caption">Repository links require access while the repository remains private.</p>
-    <aside class="rights-note"><b>Presentation assets only.</b> This site uses original schematics and aggregate metric charts. All raster-derived qualitative, alignment and uncertainty maps are withheld from the deployment pending licensing review. Source-data and software licenses are not asserted.</aside>
-  </section>
+<section id="reproduction" class="section wrap" aria-labelledby="reproduction-title">
+  <div class="section-heading"><span class="section-number">09</span><div><p class="kicker">Traceable research</p><h2 id="reproduction-title">Read the evidence.</h2></div></div>
+  <p class="narrow">The repository documents the fixed split, raster pipelines, controlled experiments and frozen results, including the TerraMind Colab workflow. Source data and checkpoints must be obtained separately under their terms. The presentation builds without either.</p>
+  <div class="link-row"><a class="button" href="https://github.com/uossheldon/robust-multimodal-geoai">Repository ↗</a><a href="https://github.com/uossheldon/robust-multimodal-geoai/blob/main/docs/REPRODUCTION.md">Reproduction guide ↗</a><a href="https://github.com/uossheldon/robust-multimodal-geoai/blob/main/docs/SCIENTIFIC_AUDIT.md">Scientific audit ↗</a></div>
+  <p class="caption">Repository documentation requires access while the repository remains private.</p>
+</section>
 </main>
-<footer class="wrap footer"><div><b>Robust Multimodal GeoAI</b><p>Independent research inspired by Newcastle GeoAI Summer School material.</p></div><p>Completed study · Frozen results<br>No post-Phase-7 tuning or checkpoint selection.</p><a href="#main">Back to top ↑</a></footer>
+<footer class="footer wrap"><div><b>Robust Multimodal GeoAI</b><p>Independent research inspired by Newcastle GeoAI Summer School<br>Completed study · frozen evaluation</p></div><a href="#main">Back to top ↑</a></footer>
 </body>
 </html>
