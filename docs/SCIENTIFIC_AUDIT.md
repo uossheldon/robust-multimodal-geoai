@@ -52,7 +52,7 @@ Validation ensembling reduced ECE, NLL and Brier compared with mean individual o
 
 The original final per-class plot overlapped rows and clipped content. Three final metric charts were redrawn from unchanged saved summaries, with correctly associated model labels, quantitative axes, seed/SD labels and support qualifications. Optical-occlusion x positions reflect 0/10/30/50/70 rather than equal index spacing. Completed TerraMind plots use documented saved validation metadata rather than partial exports.
 
-The existing qualitative image is retained unchanged. It contains the first two September 8 tiles, seed-42 robust/TerraMind examples, and an error map under S2 target validity. It is valid as an illustrative prediction panel with this qualification, not a common-support quantitative comparison or a cross-date sample. See [FINAL_TEST_RESULTS.md](FINAL_TEST_RESULTS.md).
+The historical qualitative image is withheld from the public tree and rewritten history after the public-release cleanup. It contained the first two September 8 tiles, seed-42 robust/TerraMind examples, and an error map under S2 target validity. It is valid as an illustrative prediction panel with this qualification, not a common-support quantitative comparison or a cross-date sample. See [FINAL_TEST_RESULTS.md](FINAL_TEST_RESULTS.md).
 
 ## Reproduction and publication qualifications
 
@@ -67,3 +67,9 @@ The repository safety scan found no raw datasets, TIFFs, ZIP archives, checkpoin
 ## Final verification record
 
 The final cross-file check passed 126 assertions: headline TEST tables match frozen CSV/JSON, robustness values and population labels match the saved summaries, all eight TerraMind aggregate metrics have three metadata records, fixed tile counts/dates/windows agree, local Markdown links resolve, notebook experiment code is unchanged except its repository URL, and 107 original scientific/config/result/requirements/ignore/qualitative files match their previous Git content (with normal Git line-ending handling). The two historical TEST report writers changed only their inaccurate first-access sentence. All five redrawn charts were visually inspected; no overlapping/clipped class rows remain.
+
+## Public-release cleanup (2026-10-04)
+
+The nine raster-derived alignment/qualitative figures were removed from the current tree and all reachable public-release history. Their old image blobs are no longer reachable. A verified local-only backup bundle outside the repository retains the private record and must not be published. README and website now explicitly attribute data and teaching materials to the Newcastle University GeoAI Summer School and state that the original dataset is not redistributed. Scientific source code, aggregate results and safe metric figures are unchanged.
+
+This cleanup addresses the retained-imagery blocker identified after the historical Phase 8/9 review above. Dataset/label and withheld-image permissions remain unresolved; removal does not grant redistribution rights. No software license or visibility change is made.

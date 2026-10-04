@@ -52,7 +52,7 @@ Open `http://127.0.0.1:8000`. The presentation check builds the site. Alternativ
 
 `scripts/build_site.py` copies exactly 19 reviewed files: five site source files, the aggregate JSON asset, the hero SVG/PNG, social preview PNG, four numeric figure PNG/SVG pairs, the clean TEST CSV and an empty `.nojekyll`. It does not copy the repository root, all figures, all results or the data directory. Unexpected artifact files and symlinks cause a failure.
 
-**Withheld from the site:** all source-raster-derived figures, including `final_qualitative_test_examples.png`, `data_alignment_check.png`, the S2/S1/fusion qualitative predictions, corruption qualitative examples and uncertainty/ensemble maps. These may depend on unresolved prepared-dataset/label and derived-figure rights. They remain in the private research record where already present; making the whole repository public would require a separate review of those retained figures. No permission to republish them is inferred.
+**Public-release cleanup:** All nine source-raster-derived qualitative/alignment figures have been removed from the current tree and rewritten reachable public-release history. Raster-derived qualitative imagery is withheld from the public repository pending publication-rights review. No permission to republish them is inferred.
 
 The deployed images contain only original schematic elements or aggregate numeric summaries. This does not resolve the source archive/label license, imply permission to redistribute source data, or add a software license. Review the complete static artifact before choosing public deployment.
 
@@ -92,7 +92,7 @@ Presentation checks compare all 18 clean TEST table values, three headlines, six
 
 ## Review status
 
-The final pass consolidates repeated qualifications in one Evaluation notes disclosure and shortens methods/reproduction/footer prose. Its main structure is hero → study design → three findings → explorer → clean TEST/per-class figures → optical robustness → temporal shift → TerraMind/uncertainty → notes/limitations → reproduction. Source scientific records, model code and prior qualitative figures remain unchanged.
+The final pass consolidates repeated qualifications in one Evaluation notes disclosure and shortens methods/reproduction/footer prose. Its main structure is hero → study design → three findings → explorer → clean TEST/per-class figures → optical robustness → temporal shift → TerraMind/uncertainty → notes/limitations → reproduction. Source scientific records and model code remain unchanged; the subsequent public-release cleanup removed the restricted qualitative figures.
 
 The interactive explorer provides only measured optical-occlusion levels 0/10/30/50/70, six-model clean comparisons for three metrics, and validation–TEST pairs with a signed score difference. It does not interpolate, extrapolate, calculate percentage improvements, perform statistical testing or call models. Clean/missing and pooled optical-occlusion SD populations remain distinct. `site/assets/results_summary.json` is validated against the original CSV/JSON at full stored precision. It uses completed TerraMind evidence, not incomplete historical exports.
 
@@ -119,7 +119,7 @@ python scripts/check_lightweight.py
 
 CI and Pages use pre-rendered figure assets; their checks/build require only standard-library Python and execute no model or data pipeline. No environment or package installation was added to either workflow. All external document URLs identify existing repository files; access depends on repository permissions.
 
-The project is presentation-ready for review while remaining private. Publication is a separate manual choice; no Pages deployment or visibility change is performed by Phase 9. Source-data/label and retained qualitative-figure licensing issues remain documented in [SCIENTIFIC_AUDIT.md](SCIENTIFIC_AUDIT.md).
+The project is presentation-ready for review while remaining private. Publication is a separate manual choice; no Pages deployment or visibility change is performed by Phase 9. Source-data/label and withheld qualitative-figure licensing issues remain documented in [SCIENTIFIC_AUDIT.md](SCIENTIFIC_AUDIT.md).
 
 ## Final QA and deployment check (2026-10-03)
 

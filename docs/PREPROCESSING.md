@@ -73,7 +73,7 @@ Preview tiles: 24 across 2 dates.
 
 - `results/data_summary.csv`
 - `results/tile_manifest_preview.csv`
-- `figures/data_alignment_check.png`
+Raster-derived qualitative imagery is withheld from the public repository pending publication-rights review.
 - `figures/class_distribution.png`
 
 ## Final protocol

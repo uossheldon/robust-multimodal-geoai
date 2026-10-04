@@ -20,7 +20,9 @@ Website availability depends on Pages activation; [local preview and deployment 
 
 ---
 
-An independent research project inspired by the Newcastle GeoAI Summer School, studying four-class algal-bloom mapping with Sentinel-1 radar and Sentinel-2 optical imagery. Controlled degradation experiments, three-seed robust training and a frozen TerraMind benchmark show that resilience to simulated optical occlusion does not remove the difficulty of temporal generalisation.
+This independent research project was developed using data and teaching materials provided through the Newcastle University GeoAI Summer School. The original dataset is not redistributed. Code, experiments, analysis, aggregate results and presentation schematics were independently implemented for this project.
+
+This project studies four-class algal-bloom mapping with Sentinel-1 radar and Sentinel-2 optical imagery. Controlled degradation experiments, three-seed robust training and a frozen TerraMind benchmark show that resilience to simulated optical occlusion does not remove the difficulty of temporal generalisation.
 
 ## Research Question
 
@@ -131,9 +133,7 @@ Ensembling reduces clean validation ECE/NLL/Brier relative to the mean individua
 
 ## Qualitative Results
 
-![Existing Phase 7 qualitative examples](figures/final_qualitative_test_examples.png)
-
-The first two test tiles, both September 8, from the saved Phase 7 figure. “Robust” is occlusion-trained fusion seed 42; TerraMind also uses seed 42. Dark/green/yellow/red/grey denote background/low/mid/high/ignore. The error panel uses S2 target validity, so it illustrates errors rather than reproducing the SAR-valid quantitative denominator. Predictions outside valid labels are not verified classifications.
+Raster-derived qualitative imagery is withheld from the public repository pending publication-rights review.
 
 ## Reproduction
 

@@ -86,6 +86,6 @@ The consistent decline is evidence compatible with substantial temporal/domain s
 
 ## Qualitative examples
 
-![Saved Phase 7 examples](../figures/final_qualitative_test_examples.png)
+Raster-derived qualitative imagery is withheld from the public repository pending publication-rights review.
 
-The existing image is preserved byte-for-byte: first two test tiles (September 8), not examples from both dates. “Robust” is occlusion-trained seed 42; TerraMind is seed 42. S2/S1/fusion are conventional single runs. Colours: dark background, green low, yellow mid, red high, grey ignore. Error-map dark/red/grey means correct/incorrect/ignored under the S2 target mask. That mask differs from SAR-valid scoring support; use the numerical tables for quantitative comparison. No new inference was used to produce Phase 8 presentation updates.
+The withheld historical illustration showed the first two test tiles (September 8), not examples from both dates. “Robust” is occlusion-trained seed 42; TerraMind is seed 42. S2/S1/fusion are conventional single runs. Colours: dark background, green low, yellow mid, red high, grey ignore. Error-map dark/red/grey means correct/incorrect/ignored under the S2 target mask. That mask differs from SAR-valid scoring support; use the numerical tables for quantitative comparison. No new inference was used to produce Phase 8 presentation updates.
