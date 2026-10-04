@@ -1,6 +1,6 @@
 # Colab Workflow for TerraMind
 
-Historical Phase 6C / 6C-R workflow; training is complete. These instructions describe independent reproduction, not remaining project work. Preserve the frozen record and archive each seed before another run. No command here was executed in Phase 8.
+The benchmark is complete. These instructions support independent reproduction in a separate workspace; archive each seed before the next run to protect its outputs.
 
 This workflow uses the validated Colab setup:
 
@@ -38,9 +38,9 @@ else
 fi
 ```
 
-Authenticate to the private repository through a secure Git mechanism; do not put tokens in notebook cells or URLs.
+The repository is public; cloning requires no token.
 
-## 3. Historical TerraMind dependency recipe
+## 3. TerraMind dependencies
 
 ```bash
 pip install -q terratorch==1.2.13 torchgeo==0.9.0 numpy==2.2.6 "setuptools<81"
@@ -97,20 +97,33 @@ The built-in smoke test verifies:
 - 621 train tiles and 111 validation tiles
 - no test dates loaded
 
-Batch size **4** is fixed for the completed benchmark and three-seed reproduction. The command runs its smoke checks and then full decoder training; it is not smoke-only. Seeds 7 and 123 use the same settings, as documented in [TERRAMIND_REPRODUCIBILITY.md](TERRAMIND_REPRODUCIBILITY.md).
+Batch size **4** is fixed for the completed benchmark and three-seed reproduction. The command runs its smoke checks and then full decoder training; it is not smoke-only. Seeds 7 and 123 use the same settings, as documented in [TERRAMIND.md](TERRAMIND.md).
 
-## 7. Persist outputs back to Drive
+## 7. Persist each seed before the next run
+
+For seed 42, save all outputs under its own Drive directory:
 
 ```bash
 cd /content/robust-multimodal-geoai
-mkdir -p /content/drive/MyDrive/robust-multimodal-geoai/checkpoints
-mkdir -p /content/drive/MyDrive/robust-multimodal-geoai/colab_outputs/terramind_frozen
-cp checkpoints/terramind_frozen_best.pt /content/drive/MyDrive/robust-multimodal-geoai/checkpoints/
-cp -r results/terramind_frozen /content/drive/MyDrive/robust-multimodal-geoai/colab_outputs/
-cp figures/terramind_*.png /content/drive/MyDrive/robust-multimodal-geoai/colab_outputs/terramind_frozen/ || true
+SEED=42
+DEST=/content/drive/MyDrive/robust-multimodal-geoai/colab_outputs/terramind_seed_${SEED}
+mkdir -p "$DEST" /content/drive/MyDrive/robust-multimodal-geoai/checkpoints
+cp -r results/terramind_frozen "$DEST/"
+cp checkpoints/terramind_frozen_best.pt /content/drive/MyDrive/robust-multimodal-geoai/checkpoints/terramind_seed_${SEED}_best.pt
+cp figures/terramind_*.png "$DEST/" || true
 ```
+
+Run seeds 7 and 123 separately with identical settings, repeating the persistence block with the corresponding SEED immediately after each run:
+
+```bash
+python scripts/run_terramind.py --batch-size 4 --epochs 10 --seed 7 --data-root /content/geoai_data/SummerSchool_Subset
+# Persist seed 7 outputs before continuing.
+python scripts/run_terramind.py --batch-size 4 --epochs 10 --seed 123 --data-root /content/geoai_data/SummerSchool_Subset
+# Persist seed 123 outputs.
+```
+
+Generated raster-derived visualizations are private local reproduction outputs, not cleared public assets. Do not upload them to the repository.
 
 ## 8. Test-date policy
 
-The Phase 6C runner constructs only train and validation loaders. The completed Phase 7 comparison separately evaluated the frozen checkpoints. No further TEST inference, tuning or checkpoint selection is part of finalisation.
-
+The training runner constructs train and validation loaders only. The completed final comparison separately evaluated frozen checkpoints. Reproduction must not use TEST outcomes for tuning or checkpoint selection.

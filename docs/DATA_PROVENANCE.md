@@ -1,69 +1,35 @@
-# Data Provenance
+# Data and source provenance
 
-Phase 8 status: Phase 1.5 retrieved/validated the archive locally (see [DATA_AUDIT.md](DATA_AUDIT.md#phase-15-retrieval-and-validation)). The initial access/missing-data notes below are historical. Label/archive license and public data-derived figure permissions remain unresolved; no source-data or software license is asserted.
+This independent research project was developed using data and teaching materials provided through the Newcastle University GeoAI Summer School. The original dataset is not redistributed.
 
-Phase 1 provenance notes for the Day 1 and Day 2 data dependencies.
+## External materials and independent work
 
-## External References Found
+The external Summer School materials supplied the prepared Lough Neagh dataset and Day 1/Day 2 teaching notebooks. The notebook examples established optical/SAR preprocessing and segmentation context. This repository did not create or collect the source Sentinel data or original masks.
 
-| Source | Reference | Notebook use |
-|---|---|---|
-| Google Drive file | `https://drive.google.com/file/d/1dj-HIH21LIsCDdofuabgE55V4tp3UD_k/view?usp=sharing` | Day 1 Part 2 `SummerSchool_Subset.zip` download via `gdown`. Also appears as an alternate/commented Day 2 link. |
-| Google Drive file | `https://drive.google.com/file/d/1TXzxHG1KwcQMyB-2uOHd4WHeaxeQGbjT/view?usp=sharing` | Day 2 `SummerSchool_Subset.zip` download via `gdown`. |
-| NASA SAR explainer | `https://www.earthdata.nasa.gov/learn/earth-observation-data-basics/sar/image-interpretation` | Day 2 background link only. |
-| TerraMind | `https://github.com/IBM/terramind` | Day 2 model background link only. |
-| TerraTorch TerraMind implementation | `https://github.com/torchgeo/terratorch/blob/main/terratorch/models/backbones/terramind/model/terramind_vit.py` | Day 2 implementation reference only. |
+Independent project work comprises the alignment and preprocessing implementation, manifest-based data pipelines, four-class segmentation experiments, controlled robustness experiments, TerraMind adapter/benchmark, uncertainty and ensemble diagnostics, result analysis, aggregate plots, schematic and project website.
 
-The Drive links were not opened or downloaded during this audit.
+Pretrained architectures and weights are external dependencies: torchvision's DeepLabV3-MobileNetV3-Large and IBM/ESA TerraMind tiny through TerraTorch. Their respective upstream terms apply separately; they do not establish a license for the prepared dataset or this repository.
 
-## Download Commands In Notebooks
+## Archive provenance and inventory
 
-Day 1 Part 2:
+The locally validated `SummerSchool_Subset.zip` contained 12 date folders, 96 raster layers (B02/B03/B04/B08/NDVI/NDWI/VV/VH for each date), 12 masks, 12 optical metadata files, 12 SAR metadata files and 12 quicklooks. Archive size was 1,971,737,334 bytes; extracted size was 2,144,997,936 bytes. ZIP integrity passed with 171 members and no missing expected input files.
 
-```python
-SHARE_URL = "https://drive.google.com/file/d/1dj-HIH21LIsCDdofuabgE55V4tp3UD_k/view?usp=sharing"
-LOCAL_ZIP = BASE_DIR / "SummerSchool_Subset.zip"
-DATA_DIR = BASE_DIR / "session_1_data"
-DATASET_ROOT = DATA_DIR / "SummerSchool_Subset"
-gdown.download(url=SHARE_URL, output=str(LOCAL_ZIP), quiet=False, fuzzy=True)
-```
+The Day 1 Part 2 source was [Google Drive file 1dj-HIH21LIsCDdofuabgE55V4tp3UD_k](https://drive.google.com/file/d/1dj-HIH21LIsCDdofuabgE55V4tp3UD_k/view), used successfully for local retrieval on 2026-09-30. The alternate Day 2 reference was [file 1TXzxHG1KwcQMyB-2uOHd4WHeaxeQGbjT](https://drive.google.com/file/d/1TXzxHG1KwcQMyB-2uOHd4WHeaxeQGbjT/view); it was unavailable at retrieval. These are source references, not permission to redistribute or guarantees of continuing access.
 
-Day 2:
+Representative metadata recorded:
 
-```python
-SHARE_URL = "https://drive.google.com/file/d/1TXzxHG1KwcQMyB-2uOHd4WHeaxeQGbjT/view?usp=sharing"
-LOCAL_ZIP = BASE_DIR / "SummerSchool_Subset.zip"
-DATA_DIR = BASE_DIR / "session_2_data"
-DATASET_ROOT = DATA_DIR / "SummerSchool_Subset"
-SESSION1_DATASET_ROOT = BASE_DIR / "session_1_data" / "SummerSchool_Subset"
-gdown.download(url=SHARE_URL, output=str(partial_path), quiet=False, fuzzy=True)
-```
+- Optical product: `S2B_MSIL2A_20250101T113409_N0511_R080_T29UPA_20250101T134107`.
+- SAR product: `S1A_IW_GRDH_1SDV_20250101T063857_20250101T063922_057247_070ABF_AB64_COG`.
+- Optical process endpoint: `https://sh.dataspace.copernicus.eu`; STAC: `https://stac.dataspace.copernicus.eu/v1/search`.
+- Optical units: DN; SAR: GAMMA0_TERRAIN in dB, nodata -9999; output CRS EPSG:32629.
+- Optical nodata is 0; masks use 255. The exact aligned project pipeline and fixed split are in [Methods](METHODS.md).
 
-Day 2 first tries to reuse `session_1_data/SummerSchool_Subset` if it exists.
+The original teaching split is not the project's final split. Use [split_v1.yaml](../configs/split_v1.yaml) and the fixed manifest, not notebook-era subset selections.
 
-## Provenance Status
+## Availability and unresolved rights
 
-The archive appears to contain a curated Lough Neagh 2025 dataset with Sentinel-2 optical layers, Sentinel-1 radar layers, metadata JSON files, derived indices, and segmentation labels. The notebooks do not provide enough information to prove:
+Source TIFFs, original masks/labels, archives, checkpoints and model caches are not redistributed. Nine raster-derived qualitative/alignment images were removed from the current repository and reachable public history before release. The public repository and [live website](https://uossheldon.github.io/robust-multimodal-geoai/) contain independent code, aggregate results, schematics and reviewed numeric plots.
 
-- Which Sentinel product IDs were used.
-- Exact crop bounds or projection decisions.
-- Whether Sentinel-1 and Sentinel-2 were downloaded from Copernicus, Google Earth Engine, Sentinel Hub, ASF, Microsoft Planetary Computer, or another provider.
-- Who created the algae segmentation masks.
-- Whether masks are manually labelled, model derived, threshold derived, or otherwise curated.
-- License and redistribution terms for the prepared archive and labels.
-- Whether the Google Drive links remain live or publicly accessible.
+Prepared archive/label licensing, mask authorship and preparation history, and publication rights for withheld raster-derived imagery remain unresolved. No permission to publish those images is inferred. No software license is invented or added. Upstream Sentinel availability does not clear the curated archive or labels.
 
-## Licensing Uncertainty
-
-Sentinel-1 and Sentinel-2 source imagery is generally open data, but the prepared archive is more than raw Sentinel data. Its labels, crops, metadata packaging, quicklooks, selected tile manifests, and any preprocessing choices are Summer-School-specific unless separately documented.
-
-Do not redistribute the archive, masks, or derived products from this project until explicit license and attribution terms are confirmed.
-
-## Historical Phase 1 blockers (before retrieval)
-
-- At Phase 1, `SummerSchool_Subset.zip` was absent; Phase 1.5 resolved local availability.
-- Phase 1 had not checked Drive availability; Phase 1.5 recorded one successful reference and one 404. No new availability check was performed in Phase 8.
-- Phase 1 lacked source details; Phase 1.5 recorded representative Sentinel item IDs, API endpoints and SAR/optical units. This does not establish the complete label preparation history or redistribution rights.
-- Label origin and license are unknown.
-- Public reconstruction can likely recreate comparable imagery, but not the exact labelled dataset without the masks and preparation recipe.
-
+Comparable optical/SAR imagery may be obtainable independently from public Sentinel sources, but exact reproduction additionally needs product selection, orbit/terrain-correction details, crops/grids and the original labels. Those masks cannot be reconstructed from public Sentinel imagery alone. NDVI/NDWI reproduction also needs the original formulas, scaling and source bands. Acquire the external data under its applicable terms; see [data layout](../data/README.md) and [Reproduction](REPRODUCTION.md).

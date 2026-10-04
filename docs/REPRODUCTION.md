@@ -1,49 +1,20 @@
-# Reproduction Guide
+# Reproduction
 
-## Frozen record and prerequisites
+Research and final model selection are closed. Independent reproduction must use a separate checkout/output workspace so frozen results are not overwritten. Do not use the held-out test dates for further model selection.
 
-Phase 8 is documentation/presentation only. Model development and the final Phase 7 comparison are closed. No training, inference, tuning or checkpoint reselection is part of finalisation. Historical commands below describe independent reproduction, which must use a separate output workspace to protect saved results.
+## A. Lightweight presentation reproduction
 
-Obtain the Summer School archive and labels separately under their source terms. Follow [data setup](../data/README.md); no raw rasters, ZIPs, trained weights or model caches are distributed. The repository is private until publication review. Keep the existing [manifest](../results/tile_manifest.csv) and [split](../configs/split_v1.yaml); do not regenerate them to change selection.
-
-## Data and environments
-
-- Local DeepLab expects `data/raw/SummerSchool_Subset/` under the project root. Its original manifest source strings use Windows separators, and its loaders join these strings directly: Linux portability is not established for those historical loaders.
-- TerraMind reconstructs paths from acquisition date and a configurable data root; Colab uses `/content/geoai_data/SummerSchool_Subset`. It never reuses DeepLab-normalized tensors.
-- `requirements.txt` records a historical Windows environment (including torch 2.8.0+cu129). It is not a complete environment lock or a Colab installation recipe; utilities also import Matplotlib and other phase-specific dependencies. Do not treat it as a guarantee of reproduction on a new platform.
-- Validated TerraMind Colab context: T4 14.56 GB, torch 2.11.0+cu128, numpy 2.2.6, TerraTorch 1.2.13, TorchGeo 0.9.0. [COLAB_WORKFLOW.md](COLAB_WORKFLOW.md) documents the existing dependency recipe. Verify resolved versions there; no environment was rebuilt in Phase 8.
-- Data-root portability tests are in `tests/test_terramind_paths.py`. They do not execute the final TEST evaluation.
-
-## Implementation map
-
-| Stage | Existing entry point / source | Frozen outputs |
-|---|---|---|
-| Alignment and manifest | `src/data/geodata.py`, `build_phase2b_manifest.py`, `apply_split.py` | `results/tile_manifest.csv`, `per_date_statistics.csv` |
-| Selected weighted S2 | `src/training/class_weighted_s2.py` | `results/s2_deeplab_weighted/` |
-| S1 / naive fusion | `src/training/train_s1_deeplab.py`, `train_fusion_deeplab.py` | `results/s1_deeplab_weighted/`, `s1_s2_early_fusion/` |
-| Modality dropout / reproducibility | `src/training/train_modality_dropout_fusion.py`, `reproducibility_check.py` | `results/modality_dropout/`, `reproducibility/` |
-| Occlusion-aware training | `src/training/occlusion_training.py` | `results/occlusion_training/` |
-| Fixed corruption benchmark | `src/evaluation/robustness_benchmark.py` | `results/robustness/` |
-| Uncertainty / ensemble | `src/evaluation/uncertainty_diagnostics.py`, `ensemble_uncertainty.py` | `results/uncertainty/`, `ensemble_uncertainty/` |
-| TerraMind | `scripts/run_terramind.py`, `notebooks/TerraMind_Colab.ipynb` | Completed evidence in `docs/TERRAMIND_VALIDATION_EVIDENCE.json` |
-| Final TEST record | `scripts/final_test_evaluation.py` | `results/final_test/` |
-
-Some runners have fixed paths and overwrite outputs. `scripts/train.py` runs the historical unweighted S2 workflow, including its Phase 2D TEST evaluation; it is not the selected weighted-S2 runner. `scripts/evaluate.py` summarizes the manifest rather than evaluating a model. `scripts/final_test_finalize_outputs.py` performs qualitative inference and writes documentation at import/run time; it is not a safe presentation-only command. Do not execute these to refresh documentation.
-
-DeepLab uses 10 epochs, batch size 8, AdamW backbone/classifier learning rates 1e-5/1e-4, weight decay 1e-3, and matched spatial augmentations. Selected models use weights `[0.243332998497, 0.709198873576, 0.651737877057, 2.395730250869]` with ignore=255. TerraMind decoder-only AdamW uses LR 1e-3, weight decay 1e-3, batch size 4, 10 epochs and the same weights. The config files describe experiments; not every runner parses YAML dynamically.
-
-## TerraMind Colab
-
-Mount Drive, clone/pull the existing repository, restore the optional Hugging Face cache, copy the archive to `/content`, and extract there. Train/read from local storage and copy results/checkpoints/figures back to Drive. See [COLAB_WORKFLOW.md](COLAB_WORKFLOW.md) for the full historical workflow and seed output preservation.
+From the repository root, using Python 3.11 or a compatible installation:
 
 ```bash
-# Historical fixed training invocation; not executed in Phase 8.
-python scripts/run_terramind.py --batch-size 4 --epochs 10 --seed 42 --data-root /content/geoai_data/SummerSchool_Subset
+python scripts/check_lightweight.py
+python scripts/check_presentation.py
+python -m http.server 8000 --bind 127.0.0.1 --directory .site-build
 ```
 
-The smoke test is built into this command, which continues to full decoder training. It is not a smoke-only command. The locked three-seed benchmark always uses batch size 4; do not apply earlier exploratory suggestions to increase it.
+Open `http://127.0.0.1:8000/`. The checks compile source without importing ML frameworks, exercise the pure path resolver, validate displayed metrics and build the 19-file allowlisted static site. No data, checkpoint, GPU or inference is needed.
 
-## Presentation-only reproduction
+Optional chart regeneration from existing aggregates requires Matplotlib:
 
 ```bash
 python scripts/presentation_data.py
@@ -52,8 +23,41 @@ python scripts/render_hero.py
 python scripts/check_presentation.py
 ```
 
-Requires Matplotlib in the current Python environment. Reads frozen CSV/JSON summaries and the documented TerraMind metadata transcription; writes four summary PNG/SVG figures and original schematic assets. The JSON asset is an exact presentation copy of frozen aggregates; the explorer only displays these values and TEST-minus-validation score differences. No dataset, checkpoint, GPU, network or model inference is used. Scientific records and the existing qualitative image remain unchanged.
+These presentation scripts read frozen summaries and the retained TerraMind evidence. They do not execute models. The live project is [GitHub Pages](https://uossheldon.github.io/robust-multimodal-geoai/). The repository's existing manual **Deploy research site to Pages** workflow builds only reviewed assets; an authorized maintainer can run it on `main` with `publish_reviewed_site=true` after reviewing changes.
 
-## Known reproducibility limits
+## B. DeepLab experimental environment
 
-Data/label redistribution rights, incomplete historical environment locks, absent full Colab runtime exports, Windows-only legacy path assumptions and model-specific valid-pixel masks qualify portability and comparison. Phase 7 recorded 16-character SHA-256 prefixes rather than full digests. See [SCIENTIFIC_AUDIT.md](SCIENTIFIC_AUDIT.md) for the complete interpretation record. No new experiment is required or authorized by this guide.
+[requirements.txt](../requirements.txt) records the local Windows stack, including torch 2.8.0+cu129. It is not a complete environment lock or a TerraMind recipe; plotting utilities also require Matplotlib. Preserve compatible CUDA-enabled PyTorch/torchvision and geospatial dependencies without changing the system CUDA toolkit.
+
+DeepLab reads `data/raw/SummerSchool_Subset/` using the existing [manifest](../results/tile_manifest.csv). Legacy loader paths contain Windows separators; Linux portability is not established. Keep the [fixed split](../configs/split_v1.yaml) and windows unchanged. [Methods](METHODS.md) records the 10-epoch, batch-size-8 optimizer, normalization, augmentations and locked loss weights.
+
+| Experiment | Implementation | Saved record |
+|---|---|---|
+| Alignment/manifest | `src/data/geodata.py`, `src/data/build_phase2b_manifest.py` | `results/tile_manifest.csv`, `results/per_date_statistics.csv` |
+| Weighted S2 | `src/training/class_weighted_s2.py` | `results/s2_deeplab_weighted/` |
+| SAR / early fusion | `src/training/train_s1_deeplab.py`, `src/training/train_fusion_deeplab.py` | `results/s1_deeplab_weighted/`, `results/s1_s2_early_fusion/` |
+| Modality dropout / reproducibility | `src/training/train_modality_dropout_fusion.py`, `src/training/reproducibility_check.py` | `results/modality_dropout/`, `results/reproducibility/` |
+| Occlusion-aware training | `src/training/occlusion_training.py` | `results/occlusion_training/` |
+| Robustness | `src/evaluation/robustness_benchmark.py` | `results/robustness/` |
+| Uncertainty / ensemble | `src/evaluation/uncertainty_diagnostics.py`, `src/evaluation/ensemble_uncertainty.py` | `results/uncertainty/`, `results/ensemble_uncertainty/` |
+| Final evaluation | `scripts/final_test_evaluation.py` | `results/final_test/` |
+
+Configs describe the experiments; not every runner dynamically reads YAML. Several runners overwrite outputs. `scripts/train.py` is the historical unweighted S2 workflow, including earlier Phase 2D TEST access, not the selected weighted runner. `scripts/evaluate.py` summarizes the manifest. `scripts/final_test_finalize_outputs.py` runs qualitative inference at import/run time: do not use it for presentation updates. Experiment runners may write development-era reports and restricted imagery locally; those generated outputs are not canonical public documentation or cleared for redistribution.
+
+## C. TerraMind Colab environment
+
+Validated environment: Tesla T4 14.56 GB, torch 2.11.0+cu128, numpy 2.2.6, TerraTorch 1.2.13 and TorchGeo 0.9.0. Use [COLAB_WORKFLOW.md](COLAB_WORKFLOW.md) and [TerraMind_Colab.ipynb](../notebooks/TerraMind_Colab.ipynb). The frozen backbone receives independently prepared RGB+S1RTC, not DeepLab-normalized tensors.
+
+```bash
+python scripts/run_terramind.py --batch-size 4 --epochs 10 --seed 42 --data-root /content/geoai_data/SummerSchool_Subset
+```
+
+This performs built-in smoke checks followed by decoder training; it is not smoke-only. Seeds 7 and 123 use identical settings. Save each run before starting the next because output paths are shared. Completed validation evidence is retained in [TERRAMIND_VALIDATION_EVIDENCE.json](TERRAMIND_VALIDATION_EVIDENCE.json); older incomplete exports must not override it. See [TerraMind](TERRAMIND.md).
+
+## D. Required external inputs
+
+Obtain the prepared archive, masks and pretrained weights under their source terms. Exact checkpoint-based replication also requires the frozen experiment checkpoints, which are not distributed. [Data layout](../data/README.md) specifies raster and mask paths. TerraMind supports `--data-root`; local Colab storage avoids repeated Drive reads. Retain the exact manifest and split rather than regenerating eligibility.
+
+## E. Intentionally not distributed
+
+Raw imagery, original labels, archives, checkpoints, caches and withheld raster-derived qualitative images are excluded. The repository cannot reconstruct the original labels. [Data provenance](DATA_PROVENANCE.md) explains unresolved rights. Incomplete environment locks, missing full Colab runtime exports, checkpoint hash prefixes and unequal scoring support qualify exact reproduction; see [Scientific audit](SCIENTIFIC_AUDIT.md).

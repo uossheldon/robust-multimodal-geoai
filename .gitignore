@@ -83,3 +83,14 @@ Thumbs.db
 # Generated static website artifact and local browser-check outputs
 .site-build/
 .site-preview/
+
+# Withheld raster-derived presentation assets (publication rights unresolved)
+figures/data_alignment_check.png
+figures/fusion_qualitative_predictions.png
+figures/s1_qualitative_predictions.png
+figures/s2_qualitative_predictions.png
+figures/robustness_qualitative_examples.png
+figures/corruption_training_qualitative.png
+figures/uncertainty_qualitative_examples.png
+figures/ensemble_uncertainty_examples.png
+figures/final_qualitative_test_examples.png

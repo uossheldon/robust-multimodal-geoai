@@ -1,6 +1,6 @@
 # Final Held-Out Test Results
 
-Phase 7 evaluated the frozen final models after subsequent model development and validation-based selection had finished. No post-Phase-7 tuning or checkpoint selection was performed. Phase 8 reads these saved results only.
+Phase 7 evaluated the frozen final models after subsequent model development and validation-based selection had finished. No post-Phase-7 tuning or checkpoint selection was performed. The tables below are the frozen public record.
 
 ## Audit and provenance
 
@@ -8,9 +8,9 @@ Phase 7 evaluated the frozen final models after subsequent model development and
 - The earlier unweighted S2 Phase 2D TEST evaluation is preserved in `results/s2_deeplab/test_metrics.json`. Phase 7 is the final frozen comparison, not the first historical access to TEST. See [SCIENTIFIC_AUDIT.md](SCIENTIFIC_AUDIT.md#test-access-history).
 - Checkpoint names and SHA-256 prefixes are recorded in [final_summary.json](../results/final_test/final_summary.json). Validation macro mIoU determined checkpoint selection.
 - Clean results come from [clean_test_results.csv](../results/final_test/clean_test_results.csv); robustness from [robustness_test_results.csv](../results/final_test/robustness_test_results.csv) and the saved JSON summary; date results from [per_date_test_results.csv](../results/final_test/per_date_test_results.csv).
-- All scientific CSV/JSON records are unchanged by Phase 8. Tables and plots format these saved values.
+- All scientific CSV/JSON records remain unchanged. Tables and plots format these saved values.
 
-## Clean held-out TEST
+## Clean held-out September test
 
 | Model | Runs | Macro mIoU | Macro Dice | Binary algae Dice |
 | --- | --- | --- | --- | --- |
@@ -40,7 +40,7 @@ Phase 7 evaluated the frozen final models after subsequent model development and
 
 ## Frozen robustness protocol on TEST
 
-The evaluator reuses `apply_optical_occlusion` from the Phase 4A implementation, fractions 0/10/30/50/70%, and corruption seeds **101, 202, 303**. Each mask is deterministic from seed, tile ID and fraction. It zeroes normalized S2 channels only; labels and SAR stay fixed. Missing normalized modalities use zeros. TerraMind was evaluated clean only.
+The evaluator reuses `apply_optical_occlusion` from the original frozen robustness implementation, fractions 0/10/30/50/70%, and corruption seeds **101, 202, 303**. Each mask is deterministic from seed, tile ID and fraction. It zeroes normalized S2 channels only; labels and SAR stay fixed. Missing normalized modalities use zeros. TerraMind was evaluated clean only.
 
 | Condition | SD population | Modality dropout mIoU | Occlusion-trained mIoU |
 | --- | --- | --- | --- |
@@ -82,10 +82,4 @@ Multi-seed entries are mean ± sample SD over training seeds. S2 and TerraMind a
 | Dropout + occlusion training | 3 seeds | 0.2648 ± 0.0089 | 0.1882 ± 0.0293 |
 | Frozen TerraMind | 3 seeds | 0.2771 ± 0.0138 | 0.1718 ± 0.0177 |
 
-The consistent decline is evidence compatible with substantial temporal/domain shift, not proof of its physical cause. There are only two test dates from the same region. TerraMind validation provenance is documented in [TERRAMIND_REPRODUCIBILITY.md](TERRAMIND_REPRODUCIBILITY.md). No TEST result changed a method, hyperparameter or checkpoint.
-
-## Qualitative examples
-
-Raster-derived qualitative imagery is withheld from the public repository pending publication-rights review.
-
-The withheld historical illustration showed the first two test tiles (September 8), not examples from both dates. “Robust” is occlusion-trained seed 42; TerraMind is seed 42. S2/S1/fusion are conventional single runs. Colours: dark background, green low, yellow mid, red high, grey ignore. Error-map dark/red/grey means correct/incorrect/ignored under the S2 target mask. That mask differs from SAR-valid scoring support; use the numerical tables for quantitative comparison. No new inference was used to produce Phase 8 presentation updates.
+The consistent decline is evidence compatible with substantial temporal/domain shift, not proof of its physical cause. There are only two test dates from the same region. TerraMind validation provenance is documented in [TERRAMIND.md](TERRAMIND.md). No TEST result changed a method, hyperparameter or checkpoint.
