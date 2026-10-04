@@ -40,10 +40,10 @@
       target.appendChild(card);
     }
   }
-  function horizontalAxis(maximum,label) {
+  function horizontalAxis(maximum,label,ticks = [0, maximum/4, maximum/2, maximum*3/4, maximum]) {
     const scale=v=>260+v/maximum*590;
-    for(let i=0;i<=4;i++) {
-      const v=maximum*i/4,x=scale(v);
+    for(const v of ticks) {
+      const x=scale(v);
       line(x,35,x,345);text(x,374,v.toFixed(2),{'text-anchor':'middle'});
     }
     text(555,408,label,{'text-anchor':'middle',class:'axis-label'});
@@ -52,9 +52,9 @@
   function renderOptical() {
     const rate=Number(byId('occlusion-rate').value);
     start(`Macro mIoU at measured optical occlusion rates; selected ${rate}%`);
-    const x=r=>85+r/70*740,y=v=>335-v/.28*290;
-    for (let i=0;i<=4;i++) {
-      const v=i*.07;line(85,y(v),825,y(v));text(70,y(v)+6,v.toFixed(2),{'text-anchor':'end'});
+    const x=r=>85+r/70*740,y=v=>335-v/.30*290;
+    for (const v of [0,.05,.10,.15,.20,.25,.30]) {
+      line(85,y(v),825,y(v));text(70,y(v)+6,v.toFixed(2),{'text-anchor':'end'});
     }
     for(const r of data.occlusion_rates) text(x(r),367,`${r}`,{'text-anchor':'middle'});
     text(455,408,'Optical occlusion rate (%)',{'text-anchor':'middle',class:'axis-label'});
@@ -78,7 +78,7 @@
   }
   function renderComparison() {
     const metric=byId('comparison-metric').value;
-    start(`Clean September TEST comparison: ${names[metric]}`);
+    start(`Clean September test comparison: ${names[metric]}`);
     const scale=horizontalAxis(metric==='mean_iou'?.30:metric==='macro_dice'?.40:.80,names[metric]);
     const cards=[];
     data.models.forEach((m,i)=>{
@@ -92,7 +92,7 @@
   function renderTemporal() {
     const selected=byId('temporal-model').value,model=data.models.find(m=>m.id===selected);
     start(`Validation-to-test Macro mIoU; highlighted ${model.label}`);
-    const scale=horizontalAxis(.35,'Macro mIoU');
+    const scale=horizontalAxis(.35,'Macro mIoU',[0,.10,.20,.30]);
     data.models.forEach((m,i)=>{
       const y=60+i*53;
       if(m.id===selected) node('rect',{x:5,y:y-22,width:890,height:45,rx:4,class:'selected-row'});

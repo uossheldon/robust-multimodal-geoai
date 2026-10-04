@@ -104,7 +104,7 @@ pre code { font-size:inherit; }
 .finding-grid article { border-top:2px solid var(--accent); padding-top:18px; }
 .finding-grid p { font-size:15px; }
 .figure-scroll { overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:#fff; }
-.figure-scroll img { width:100%; min-width:1000px; border:0; border-radius:0; }
+.figure-scroll img { width:100%; height:auto; border:0; border-radius:0; }
 .figure-scroll a { display:block; }
 .mobile-hint { display:none; }
 .mode-controls { display:flex; flex-wrap:wrap; gap:8px; margin:25px 0; }
@@ -154,3 +154,9 @@ select:focus-visible { outline:3px solid var(--focus); outline-offset:4px; }
   .figure-scroll img { min-width:1000px; }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation:none!important; transition:none!important; } }
+
+/* Wide figures fit their container; narrow screens retain readable scrollable plots. */
+.schematic-scroll { max-width:100%; overflow-x:auto; }
+.schematic-scroll a { display:block; }
+@media(max-width:1000px) { .figure-scroll img { min-width:1000px; } }
+@media(max-width:640px) { .schematic-scroll img { width:900px; min-width:900px; max-width:none; } }

@@ -93,6 +93,7 @@ def render():
         point(ax,val,y,BLUE,'s','Validation' if y==0 else None)
         point(ax,test,y,TEAL,'o','September TEST' if y==0 else None)
     ax.set_yticks(range(6),labels);ax.invert_yaxis();ax.set_xlim(.10,.32)
+    ax.set_xticks([.10,.15,.20,.25,.30], ['0.10','0.15','0.20','0.25','0.30'])
     setup(ax,'Macro mIoU','Model');ax.legend(loc='upper right',frameon=False)
     ax.set_title('Validation-to-test performance shift',fontsize=17,pad=18)
     save(fig,'final_temporal_generalisation')
