@@ -61,7 +61,7 @@ def check():
     summary=json.loads((ROOT/'results/final_test/final_summary.json').read_text())
     occ=next(r for r in summary['robustness_summary'] if r['model']=='occlusion_trained' and r['condition']=='occlusion_70')
     assert page.headlines=={'clean':value(results['occlusion_trained'],'mean_iou'),'occlusion':value(occ,'mean_iou'),'terramind':value(results['terramind_frozen'],'binary_algae_dice')}
-    for phrase in ['Phase 2D','post-Phase-7','3,474,284','3,169,093','pool','licensing review','not measured real cloud cover']:
+    for phrase in ['earlier exploratory unweighted Sentinel-2 test evaluation','final frozen comparison','3,474,284','3,169,093','pool','licensing review','not measured real cloud cover']:
         assert phrase in html, f'Missing scientific qualification: {phrase}'
     assert not re.search(r'\b[A-Za-z]:[\\/]',html), 'Local Windows path in site'
     assert 'secrets.' not in (ROOT/'.github/workflows/pages.yml').read_text(), 'Pages must not need user secrets'

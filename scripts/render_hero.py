@@ -33,7 +33,7 @@ def headlines():
     return [value(rows['occlusion_trained'],'mean_iou'),value(occ,'mean_iou'),value(rows['terramind_frozen'],'binary_algae_dice')]
 
 def main():
-    plt.rcParams.update({'font.family':'DejaVu Sans','svg.fonttype':'none','svg.hashsalt':'geoai-phase9'})
+    plt.rcParams.update({'font.family':'DejaVu Sans','svg.fonttype':'none','svg.hashsalt':'geoai-final'})
     vals=headlines()
     fig,ax=plt.subplots(figsize=(14.4,9.6),dpi=150)
     fig.patch.set_facecolor(BG); ax.set(xlim=(0,1),ylim=(0,1)); ax.axis('off')
@@ -92,9 +92,5 @@ def main():
         text(ax,x,.17,note,12,'#d4e4dc')
     text(ax,.06,.075,'Final TEST · ¹ Training × corruption seeds · ± sample SD · No significance claim',12,'#d4e4dc')
     fig.savefig(ROOT/'figures/social_preview.png',dpi=100); plt.close(fig)
-    folder=ROOT/'figures/badges'; folder.mkdir(exist_ok=True)
-    for name,label in [('python','Python · PyTorch'),('geospatial','Rasterio · S1 + S2'),('seeds','3 training seeds'),('terramind','Frozen TerraMind')]:
-        w=len(label)*7+24
-        (folder/f'{name}.svg').write_text(f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="24" role="img" aria-label="{escape(label)}"><rect width="{w}" height="24" rx="4" fill="{INK}"/><text x="{w/2}" y="16" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="white">{escape(label)}</text></svg>\n',encoding='utf-8')
 
 if __name__=='__main__': main()

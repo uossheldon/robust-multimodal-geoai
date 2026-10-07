@@ -1,35 +1,32 @@
-# Data and source provenance
+# Data provenance and availability
 
-This independent research project was developed using data and teaching materials provided through the Newcastle University GeoAI Summer School. The original dataset is not redistributed.
+This independent research project uses data and teaching materials provided through the Newcastle University GeoAI Summer School. The original prepared dataset is not redistributed.
 
-## External materials and independent work
+## Dataset used
 
-The external Summer School materials supplied the prepared Lough Neagh dataset and Day 1/Day 2 teaching notebooks. The notebook examples established optical/SAR preprocessing and segmentation context. This repository did not create or collect the source Sentinel data or original masks.
+The supplied subset contains 12 acquisition dates over Lough Neagh. Each date includes Sentinel-2 optical layers (B02/B03/B04/B08, NDVI and NDWI), Sentinel-1 VV/VH layers, metadata and a segmentation mask. The implemented models use Sentinel-2 RGB (B04/B03/B02) and Sentinel-1 VV/VH.
 
-Independent project work comprises the alignment and preprocessing implementation, manifest-based data pipelines, four-class segmentation experiments, controlled robustness experiments, TerraMind adapter/benchmark, uncertainty and ensemble diagnostics, result analysis, aggregate plots, schematic and project website.
+The project keeps a fixed date-level split and an 846-tile manifest. See [Methods](METHODS.md) and the [manifest](../results/tile_manifest.csv) for the exact experimental setup.
 
-Pretrained architectures and weights are external dependencies: torchvision's DeepLabV3-MobileNetV3-Large and IBM/ESA TerraMind tiny through TerraTorch. Their respective upstream terms apply separately; they do not establish a license for the prepared dataset or this repository.
+Representative processing metadata:
 
-## Archive provenance and inventory
+- Sentinel-2: Level-2A optical data, with digital-number scaling handled in preprocessing.
+- Sentinel-1: terrain-corrected VV/VH backscatter in dB.
+- Output CRS: EPSG:32629.
+- Optical nodata: 0.
+- SAR nodata: -9999.
+- Mask ignore label: 255.
 
-The locally validated `SummerSchool_Subset.zip` contained 12 date folders, 96 raster layers (B02/B03/B04/B08/NDVI/NDWI/VV/VH for each date), 12 masks, 12 optical metadata files, 12 SAR metadata files and 12 quicklooks. Archive size was 1,971,737,334 bytes; extracted size was 2,144,997,936 bytes. ZIP integrity passed with 171 members and no missing expected input files.
+## Project contribution
 
-The Day 1 Part 2 source was [Google Drive file 1dj-HIH21LIsCDdofuabgE55V4tp3UD_k](https://drive.google.com/file/d/1dj-HIH21LIsCDdofuabgE55V4tp3UD_k/view), used successfully for local retrieval on 2026-09-30. The alternate Day 2 reference was [file 1TXzxHG1KwcQMyB-2uOHd4WHeaxeQGbjT](https://drive.google.com/file/d/1TXzxHG1KwcQMyB-2uOHd4WHeaxeQGbjT/view); it was unavailable at retrieval. These are source references, not permission to redistribute or guarantees of continuing access.
+The repository contains independently implemented alignment and preprocessing code, manifest-based data loading, four-class segmentation experiments, robustness interventions, TerraMind benchmarking, uncertainty analysis, aggregate figures and the project website.
 
-Representative metadata recorded:
+Pretrained architectures and weights remain external dependencies. Their upstream terms apply separately.
 
-- Optical product: `S2B_MSIL2A_20250101T113409_N0511_R080_T29UPA_20250101T134107`.
-- SAR product: `S1A_IW_GRDH_1SDV_20250101T063857_20250101T063922_057247_070ABF_AB64_COG`.
-- Optical process endpoint: `https://sh.dataspace.copernicus.eu`; STAC: `https://stac.dataspace.copernicus.eu/v1/search`.
-- Optical units: DN; SAR: GAMMA0_TERRAIN in dB, nodata -9999; output CRS EPSG:32629.
-- Optical nodata is 0; masks use 255. The exact aligned project pipeline and fixed split are in [Methods](METHODS.md).
+## Public availability
 
-The original teaching split is not the project's final split. Use [split_v1.yaml](../configs/split_v1.yaml) and the fixed manifest, not notebook-era subset selections.
+The repository does not redistribute source rasters, original masks, the prepared archive, model checkpoints, caches or raster-derived qualitative imagery.
 
-## Availability and unresolved rights
+Comparable Sentinel imagery can be obtained independently from public Earth-observation sources, but exact reproduction also requires the original prepared labels and source-specific preprocessing choices. Those labels are not reconstructable from the public Sentinel imagery alone.
 
-Source TIFFs, original masks/labels, archives, checkpoints and model caches are not redistributed. Nine raster-derived qualitative/alignment images were removed from the current repository and reachable public history before release. The public repository and [live website](https://uossheldon.github.io/robust-multimodal-geoai/) contain independent code, aggregate results, schematics and reviewed numeric plots.
-
-Prepared archive/label licensing, mask authorship and preparation history, and publication rights for withheld raster-derived imagery remain unresolved. No permission to publish those images is inferred. No software license is invented or added. Upstream Sentinel availability does not clear the curated archive or labels.
-
-Comparable optical/SAR imagery may be obtainable independently from public Sentinel sources, but exact reproduction additionally needs product selection, orbit/terrain-correction details, crops/grids and the original labels. Those masks cannot be reconstructed from public Sentinel imagery alone. NDVI/NDWI reproduction also needs the original formulas, scaling and source bands. Acquire the external data under its applicable terms; see [data layout](../data/README.md) and [Reproduction](REPRODUCTION.md).
+See [Reproduction](REPRODUCTION.md) for the supported public workflow.

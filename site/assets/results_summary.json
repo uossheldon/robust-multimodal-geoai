@@ -7,7 +7,7 @@
     "results/s1_deeplab_weighted/metrics.json",
     "results/s1_s2_early_fusion/metrics.json",
     "results/occlusion_training/aggregate_results.csv",
-    "docs/TERRAMIND_VALIDATION_EVIDENCE.json"
+    "results/terramind_validation.json"
   ],
   "models": [
     {

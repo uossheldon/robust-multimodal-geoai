@@ -1,4 +1,0 @@
-seed,best_epoch,training_time_seconds,peak_gpu_memory_mb,source,mean_iou,macro_dice,iou_background,iou_low,iou_mid,iou_high,binary_algae_iou,binary_algae_dice
-42,7.0,,,results\terramind_reproducibility\seed_42_metrics.json,0.283511,0.434891,,,,,,
-7,,,,pending_colab_run,,,,,,,,
-123,,,,pending_colab_run,,,,,,,,

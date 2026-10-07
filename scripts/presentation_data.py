@@ -12,7 +12,7 @@ METRICS = ['mean_iou', 'macro_dice', 'iou_background', 'iou_low', 'iou_mid', 'io
 SOURCES = ['results/final_test/clean_test_results.csv', 'results/final_test/final_summary.json',
            'results/s2_deeplab_weighted/metrics.json', 'results/s1_deeplab_weighted/metrics.json',
            'results/s1_s2_early_fusion/metrics.json', 'results/occlusion_training/aggregate_results.csv',
-           'docs/TERRAMIND_VALIDATION_EVIDENCE.json']
+           'results/terramind_validation.json']
 
 
 def read_json(name):

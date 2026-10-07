@@ -1,129 +1,66 @@
-# Colab Workflow for TerraMind
+# TerraMind Colab reproduction
 
-The benchmark is complete. These instructions support independent reproduction in a separate workspace; archive each seed before the next run to protect its outputs.
+This workflow reproduces the frozen TerraMind benchmark without relying on any personal cloud-storage layout.
 
-This workflow uses the validated Colab setup:
+## Environment
 
-- Tesla T4, 14.56 GB
+Validated setup:
+
+- NVIDIA T4
 - torch `2.11.0+cu128`
 - numpy `2.2.6`
-- terratorch `1.2.13`
-- torchgeo `0.9.0`
+- TerraTorch `1.2.13`
+- TorchGeo `0.9.0`
 
-It trains from local `/content` storage and persists outputs back to Google Drive.
-
-## 1. Mount Google Drive
-
-```python
-from google.colab import drive
-drive.mount('/content/drive')
-```
-
-Expected Drive files:
-
-- `/content/drive/MyDrive/robust-multimodal-geoai/data/SummerSchool_Subset.zip`
-- `/content/drive/MyDrive/robust-multimodal-geoai/model_cache/TerraMind-1.0-tiny-hf-cache.tar.gz`
-- `/content/drive/MyDrive/robust-multimodal-geoai/checkpoints/`
-- `/content/drive/MyDrive/robust-multimodal-geoai/colab_outputs/`
-
-## 2. Clone or update the repository in local Colab storage
+## 1. Clone the repository
 
 ```bash
 cd /content
-if [ ! -d robust-multimodal-geoai ]; then
-  git clone https://github.com/uossheldon/robust-multimodal-geoai.git robust-multimodal-geoai
-else
-  cd robust-multimodal-geoai
-  git pull
-fi
+git clone https://github.com/uossheldon/robust-multimodal-geoai.git
+cd robust-multimodal-geoai
 ```
 
-The repository is public; cloning requires no token.
-
-## 3. TerraMind dependencies
+## 2. Install TerraMind dependencies
 
 ```bash
 pip install -q terratorch==1.2.13 torchgeo==0.9.0 numpy==2.2.6 "setuptools<81"
 ```
 
-This is the previously used recipe, not a fully locked environment. Verify torch/numpy/TerraTorch/TorchGeo versions after resolution against the table above; preserve the validated torch build. Do not install or modify a system CUDA toolkit.
+Verify the resolved PyTorch build before training. Do not replace the Colab CUDA toolkit.
 
-## 4. Restore TerraMind Hugging Face cache when available
+## 3. Prepare the dataset
 
-```bash
-mkdir -p /root/.cache/huggingface
-if [ -f /content/drive/MyDrive/robust-multimodal-geoai/model_cache/TerraMind-1.0-tiny-hf-cache.tar.gz ]; then
-  tar -xzf /content/drive/MyDrive/robust-multimodal-geoai/model_cache/TerraMind-1.0-tiny-hf-cache.tar.gz -C /root/.cache/huggingface
-fi
+Place or extract the prepared Summer School subset at:
+
+```text
+/content/geoai_data/SummerSchool_Subset/
 ```
 
-## 5. Copy and extract the Summer School dataset to `/content`
+Expected structure:
 
-```bash
-cd /content/robust-multimodal-geoai
-mkdir -p /content/geoai_data
-cp /content/drive/MyDrive/robust-multimodal-geoai/data/SummerSchool_Subset.zip /content/geoai_data/SummerSchool_Subset.zip
-python - <<'PY'
-from pathlib import Path
-from zipfile import ZipFile
-archive = Path('/content/geoai_data/SummerSchool_Subset.zip')
-out = Path('/content/geoai_data/SummerSchool_Subset')
-out.mkdir(parents=True, exist_ok=True)
-with ZipFile(archive) as zf:
-    zf.extractall(out)
-print('extracted', out)
-PY
+```text
+images/<YYYY-MM-DD>/layers/
+masks/
 ```
 
-The runner reads rasters from `/content/geoai_data/SummerSchool_Subset`, not directly from Drive and not from Windows-style manifest paths.
+The dataset itself is not distributed by this repository.
 
-## 6. Smoke test and train
-
-```bash
-cd /content/robust-multimodal-geoai
-python scripts/run_terramind.py --batch-size 4 --epochs 10 --seed 42 --data-root /content/geoai_data/SummerSchool_Subset
-```
-
-The built-in smoke test verifies:
-
-- real RGB + S1RTC batch
-- logits `[B,4,224,224]`
-- finite loss
-- CUDA used
-- backbone frozen
-- decoder-only trainability
-- no backbone gradients
-- decoder gradients present
-- 621 train tiles and 111 validation tiles
-- no test dates loaded
-
-Batch size **4** is fixed for the completed benchmark and three-seed reproduction. The command runs its smoke checks and then full decoder training; it is not smoke-only. Seeds 7 and 123 use the same settings, as documented in [TERRAMIND.md](TERRAMIND.md).
-
-## 7. Persist each seed before the next run
-
-For seed 42, save all outputs under its own Drive directory:
+## 4. Train the frozen-backbone decoder
 
 ```bash
-cd /content/robust-multimodal-geoai
-SEED=42
-DEST=/content/drive/MyDrive/robust-multimodal-geoai/colab_outputs/terramind_seed_${SEED}
-mkdir -p "$DEST" /content/drive/MyDrive/robust-multimodal-geoai/checkpoints
-cp -r results/terramind_frozen "$DEST/"
-cp checkpoints/terramind_frozen_best.pt /content/drive/MyDrive/robust-multimodal-geoai/checkpoints/terramind_seed_${SEED}_best.pt
-cp figures/terramind_*.png "$DEST/" || true
+python scripts/run_terramind.py \
+  --batch-size 4 \
+  --epochs 10 \
+  --seed 42 \
+  --data-root /content/geoai_data/SummerSchool_Subset
 ```
 
-Run seeds 7 and 123 separately with identical settings, repeating the persistence block with the corresponding SEED immediately after each run:
+Repeat with seeds `7` and `123` using identical settings.
 
-```bash
-python scripts/run_terramind.py --batch-size 4 --epochs 10 --seed 7 --data-root /content/geoai_data/SummerSchool_Subset
-# Persist seed 7 outputs before continuing.
-python scripts/run_terramind.py --batch-size 4 --epochs 10 --seed 123 --data-root /content/geoai_data/SummerSchool_Subset
-# Persist seed 123 outputs.
-```
+The runner checks the multimodal batch, output shape, finite loss, frozen backbone, decoder gradients, split counts and exclusion of test dates before full training.
 
-Generated raster-derived visualizations are private local reproduction outputs, not cleared public assets. Do not upload them to the repository.
+## 5. Evaluation policy
 
-## 8. Test-date policy
+Checkpoint selection uses validation macro mIoU. The September test dates are excluded from training and validation. Do not use test outcomes to select hyperparameters or checkpoints.
 
-The training runner constructs train and validation loaders only. The completed final comparison separately evaluated frozen checkpoints. Reproduction must not use TEST outcomes for tuning or checkpoint selection.
+The canonical three-seed validation record is [terramind_validation.json](../results/terramind_validation.json); final test results are reported in [FINAL_TEST_RESULTS.md](FINAL_TEST_RESULTS.md).

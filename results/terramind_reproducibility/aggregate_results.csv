@@ -1,9 +1,0 @@
-experiment,metric,mean,std,n,required_n
-terramind_frozen,mean_iou,0.283511,,1,3
-terramind_frozen,macro_dice,0.434891,,1,3
-terramind_frozen,iou_background,,,0,3
-terramind_frozen,iou_low,,,0,3
-terramind_frozen,iou_mid,,,0,3
-terramind_frozen,iou_high,,,0,3
-terramind_frozen,binary_algae_iou,,,0,3
-terramind_frozen,binary_algae_dice,,,0,3
