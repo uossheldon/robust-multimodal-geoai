@@ -35,7 +35,7 @@ Multi-seed values report mean ± sample SD. The final comparison is descriptive 
 
 The benchmark uses simulated optical occlusion at 0/10/30/50/70% plus separate missing-Sentinel-1 and missing-Sentinel-2 conditions.
 
-Occlusion-trained fusion reached **0.2122 ± 0.0115 macro mIoU at 70% optical occlusion** on the September test dates. Complete Sentinel-1 loss remained challenging.
+Occlusion-trained fusion reached **0.2122 ± 0.0115 macro mIoU at 70% optical occlusion** on the September test dates. Complete Sentinel-1 loss remained challenging. Optical-occlusion SD pools nine training-seed × corruption-seed runs; clean and missing-modality SD uses three training seeds. The masks simulate missing optical information, not measured cloud cover.
 
 ![Robustness comparison](figures/final_robustness_curves.svg)
 
@@ -66,7 +66,7 @@ results/       Metrics, manifests and compact experiment records
 figures/       Publication-ready aggregate figures
 site/          Static project website and results explorer
 docs/          Methods, results, provenance and reproduction notes
-tests/         Lightweight path-handling tests
+tests/         Lightweight path, split and evidence checks
 ```
 
 ## Reproduction
@@ -79,7 +79,7 @@ python scripts/check_presentation.py
 python -m http.server 8000 --bind 127.0.0.1 --directory .site-build
 ```
 
-Experimental reproduction requires the external prepared dataset and pretrained weights. See [Reproduction](docs/REPRODUCTION.md) and the [TerraMind Colab workflow](docs/COLAB_WORKFLOW.md).
+Experimental reproduction requires the external prepared dataset and pretrained weights. See [Reproduction](docs/REPRODUCTION.md) and the [TerraMind Colab workflow](docs/REPRODUCTION.md#colab-setup).
 
 ## Data availability
 
@@ -89,7 +89,7 @@ The public repository contains independently implemented code, experiment config
 
 ## Limitations
 
-The study covers one region and two test dates, with severe class imbalance and unequal modality-dependent scoring support. Binary algae detection is not equivalent to four-class severity mapping. Uncertainty diagnostics are exploratory and do not establish a deployment-safety mechanism.
+The study covers one region and two test dates, with severe class imbalance and unequal modality-dependent scoring support. Binary algae detection is not equivalent to four-class severity mapping. Ensembling improved probability calibration, but error-detection AUROC remained modest and missing-modality behaviour inconsistent. Uncertainty is not a deployment-safety mechanism. No model selection or tuning followed the final comparison.
 
 ## Documentation
 
@@ -100,4 +100,3 @@ The study covers one region and two test dates, with severe class imbalance and 
 - [Scientific audit](docs/SCIENTIFIC_AUDIT.md)
 - [TerraMind benchmark](docs/TERRAMIND.md)
 - [Uncertainty and calibration](docs/UNCERTAINTY.md)
-- [Colab workflow](docs/COLAB_WORKFLOW.md)

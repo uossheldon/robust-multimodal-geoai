@@ -5,7 +5,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
-from PIL import Image, ImageDraw
 from torch import nn
 from torch.utils.data import DataLoader
 
@@ -14,13 +13,11 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.data.fusion_dataset import S1S2EarlyFusionDataset
 from src.data.s1_dataset import fit_sar_train_statistics
-from src.evaluation.robustness_benchmark import OCCLUSION_FRACTIONS, SEEDS as OCC_SEEDS, add_degradation, evaluate_model, stable_int
+from src.evaluation.robustness_benchmark import OCCLUSION_FRACTIONS, SEEDS as OCC_SEEDS, evaluate_model, stable_int
 from src.models.deeplab import create_fusion_deeplab
 from src.training.train_s2_deeplab import run_epoch, seed_everything
 
 RESULT_DIR = PROJECT_ROOT / 'results' / 'reproducibility'
-FIGURE_DIR = PROJECT_ROOT / 'figures'
-DOCS_DIR = PROJECT_ROOT / 'docs'
 CHECKPOINT_DIR = PROJECT_ROOT / 'checkpoints'
 MANIFEST_PATH = PROJECT_ROOT / 'results' / 'tile_manifest.csv'
 TRAIN_SEEDS = [42, 7, 123]
@@ -105,48 +102,10 @@ def aggregate(df):
     out.columns=['_'.join([str(x) for x in c if x]) for c in out.columns]
     return out
 
-def save_figures(agg):
-    for filename, conditions, title in [
-        ('reproducibility_clean_missing.png',['clean','missing_s1_zero','missing_s2_zero'],'Reproducibility: clean and missing modality'),
-        ('reproducibility_occlusion.png',['occlusion_0','occlusion_10','occlusion_30','occlusion_50','occlusion_70'],'Reproducibility: optical occlusion diagnostic')]:
-        canvas=Image.new('RGB',(980,520),'white'); draw=ImageDraw.Draw(canvas); draw.text((24,18),title,fill=(0,0,0))
-        y=70; maxv=max(float(agg['mean_iou_mean'].max()),1e-6)
-        for cond in conditions:
-            draw.text((24,y+18),cond,fill=(0,0,0))
-            for i,method in enumerate(['original','modality_dropout']):
-                row=agg[(agg.method==method)&(agg.primary_condition==cond)]
-                if row.empty: continue
-                mean=float(row.mean_iou_mean.iloc[0]); std=float(row.mean_iou_std.iloc[0]); w=int(620*mean/maxv); yy=y+i*24
-                color=(210,120,50) if method=='original' else (80,130,210)
-                draw.rectangle((220,yy,220+w,yy+16),fill=color); draw.text((228+w,yy-2),f'{method} {mean:.3f}±{std:.3f}',fill=(0,0,0))
-            y+=78
-        canvas.save(FIGURE_DIR/filename)
-
-def write_doc(agg, summary):
-    def cell(method,cond):
-        r=agg[(agg.method==method)&(agg.primary_condition==cond)].iloc[0]
-        return f"{r.mean_iou_mean:.4f} ± {r.mean_iou_std:.4f}"
-    doc=f"""# Reproducibility Check
-
-Validation only. No held-out test dates were evaluated.
-
-Training seeds: `{TRAIN_SEEDS}`.
-
-| Condition | Original fusion macro mIoU | Modality-dropout macro mIoU |
-|---|---:|---:|
-| Clean | {cell('original','clean')} | {cell('modality_dropout','clean')} |
-| Missing S1 | {cell('original','missing_s1_zero')} | {cell('modality_dropout','missing_s1_zero')} |
-| Missing S2 | {cell('original','missing_s2_zero')} | {cell('modality_dropout','missing_s2_zero')} |
-| 30% simulated optical occlusion | {cell('original','occlusion_30')} | {cell('modality_dropout','occlusion_30')} |
-| 70% simulated optical occlusion | {cell('original','occlusion_70')} | {cell('modality_dropout','occlusion_70')} |
-
-Conclusion: {summary['conclusion']}
-"""
-    (DOCS_DIR/'REPRODUCIBILITY_CHECK.md').write_text(doc,encoding='utf-8')
 
 def main():
     os.environ.setdefault('TORCH_HOME', str(PROJECT_ROOT/'.torch'))
-    for d in [RESULT_DIR,FIGURE_DIR,DOCS_DIR,CHECKPOINT_DIR]: d.mkdir(parents=True,exist_ok=True)
+    for d in [RESULT_DIR,CHECKPOINT_DIR]: d.mkdir(parents=True,exist_ok=True)
     device=torch.device('cuda'); torch.cuda.reset_peak_memory_stats(device)
     stats=fit_sar_train_statistics(MANIFEST_PATH, project_root=PROJECT_ROOT); weights=train_class_weights()
     train_infos=[]; rows=[]
@@ -156,12 +115,10 @@ def main():
             rows.extend(eval_one(method,seed,stats,device))
     per=pd.DataFrame(rows); per.to_csv(RESULT_DIR/'per_seed_results.csv',index=False)
     agg=aggregate(per); agg.to_csv(RESULT_DIR/'aggregate_results.csv',index=False)
-    save_figures(agg)
     def get(method,cond): return float(agg[(agg.method==method)&(agg.primary_condition==cond)].mean_iou_mean.iloc[0])
     stable = get('modality_dropout','missing_s2_zero') > get('original','missing_s2_zero') and get('modality_dropout','clean') >= get('original','clean')
-    summary={'training_seeds':TRAIN_SEEDS,'occlusion_seeds':OCC_SEEDS,'train_runs':train_infos,'peak_gpu_memory_mb':float(torch.cuda.max_memory_allocated(device)/(1024**2)),'conclusion':'Modality dropout improvement is stable across these seeds.' if stable else 'Modality dropout improvement is not fully stable across these seeds.','aggregate':agg.to_dict(orient='records')}
+    summary={'training_seeds':TRAIN_SEEDS,'occlusion_seeds':OCC_SEEDS,'train_runs':train_infos,'peak_gpu_memory_mb':float(torch.cuda.max_memory_allocated(device)/(1024**2)),'conclusion':'Modality dropout improvement is stable across these seeds.' if stable else 'Modality dropout improvement is not fully stable across these seeds.'}
     (RESULT_DIR/'summary.json').write_text(json.dumps(summary,indent=2),encoding='utf-8')
-    write_doc(agg,summary)
     print(json.dumps({'seeds':TRAIN_SEEDS,'conclusion':summary['conclusion'],'peak_gpu_memory_mb':summary['peak_gpu_memory_mb']},indent=2))
 
 if __name__=='__main__': main()

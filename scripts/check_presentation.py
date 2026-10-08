@@ -58,7 +58,7 @@ def check():
         return f"{float(row[key+'_mean']):.4f}"+(f" ± {float(row[key+'_std']):.4f}" if int(row['n'])>1 else '')
     assert len(page.metrics)==18
     for (model,metric),text in page.metrics.items(): assert text==value(results[model],metric), f'Metric mismatch: {model}/{metric}'
-    summary=json.loads((ROOT/'results/final_test/final_summary.json').read_text())
+    summary=json.loads((ROOT/'results/final_test/final_summary.json').read_text(encoding='utf-8'))
     occ=next(r for r in summary['robustness_summary'] if r['model']=='occlusion_trained' and r['condition']=='occlusion_70')
     assert page.headlines=={'clean':value(results['occlusion_trained'],'mean_iou'),'occlusion':value(occ,'mean_iou'),'terramind':value(results['terramind_frozen'],'binary_algae_dice')}
     for phrase in ['earlier exploratory unweighted Sentinel-2 test evaluation','final frozen comparison','3,474,284','3,169,093','pool','licensing review','not measured real cloud cover']:
@@ -84,17 +84,21 @@ def check():
     for name in ['final_clean_model_comparison','final_robustness_curves','final_per_class_iou','final_temporal_generalisation']:
         ET.parse(ROOT/'figures'/f'{name}.svg')
     hero=(ROOT/'figures/hero_overview.svg').read_text(encoding='utf-8')
-    for value in page.headlines.values(): assert value in hero
+    for model, metric in [('occlusion_trained','mean_iou'),('terramind_frozen','binary_algae_dice')]:
+        row=results[model]
+        assert f"{float(row[metric+'_mean']):.3f} ± {float(row[metric+'_std']):.3f}" in hero
+    assert f"{float(occ['mean_iou_mean']):.3f} ± {float(occ['mean_iou_std']):.3f}" in hero
     for name in FILES:
         assert not any(s in name.lower() for s in ['qualitative','alignment','checkpoint','.tif','.zip']), 'Unreviewed data-derived asset'
     # Prove the deployment audit rejects an unexpected raw-data-like file.
-    with tempfile.TemporaryDirectory(prefix='geoai-presentation-') as temp:
+    (ROOT / '.cache').mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='geoai-presentation-', dir=ROOT / '.cache') as temp:
         test=Path(temp)/'artifact'; shutil.copytree(OUTPUT,test)
         (test/'unexpected.tif').write_bytes(b'not data')
         try: audit_artifact(test)
         except ValueError: pass
         else: raise AssertionError('Artifact audit accepted an unlisted file')
-    for p in [ROOT/'figures/hero_overview.svg',ROOT/'site/favicon.svg',*(ROOT/'figures/badges').glob('*.svg')]: ET.parse(p)
+    for p in [ROOT/'figures/hero_overview.svg',ROOT/'site/favicon.svg']: ET.parse(p)
     # Relative README images must remain viewable on GitHub.
     readme=(ROOT/'README.md').read_text(encoding='utf-8')
     for ref in re.findall(r'!\[[^\]]*\]\(([^)]+)\)',readme):

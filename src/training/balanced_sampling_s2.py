@@ -9,7 +9,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
-from PIL import Image, ImageDraw
 from torch import nn
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
@@ -24,8 +23,6 @@ from src.training.train_s2_deeplab import make_loader, run_epoch, seed_everythin
 
 RESULT_DIR = PROJECT_ROOT / "results" / "s2_deeplab_balanced_sampling"
 WEIGHTED_DIR = PROJECT_ROOT / "results" / "s2_deeplab_weighted"
-FIGURE_DIR = PROJECT_ROOT / "figures"
-DOCS_DIR = PROJECT_ROOT / "docs"
 CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
 
 MIN_ALGAE_FRACTION = 0.01
@@ -245,130 +242,15 @@ def comparison_rows(balanced: dict[str, object]) -> pd.DataFrame:
     return frame
 
 
-def save_comparison_figure(rows: pd.DataFrame) -> None:
-    FIGURE_DIR.mkdir(exist_ok=True)
-    colors = {
-        "baseline": (80, 130, 210),
-        "weighted_loss": (215, 105, 60),
-        "balanced_sampling": (92, 160, 95),
-    }
-    panels = [
-        ("Macro metrics", [("mean_iou", "mIoU"), ("macro_dice", "Dice"), ("binary_algae_iou", "Bin IoU"), ("binary_algae_dice", "Bin Dice")]),
-        ("Per-class IoU", [("iou_background", "C0"), ("iou_low", "C1"), ("iou_mid", "C2"), ("iou_high", "C3")]),
-        ("Prediction class fraction", [("predicted_class_0_fraction", "C0"), ("predicted_class_1_fraction", "C1"), ("predicted_class_2_fraction", "C2"), ("predicted_class_3_fraction", "C3")]),
-    ]
-    canvas = Image.new("RGB", (1180, 760), "white")
-    draw = ImageDraw.Draw(canvas)
-    draw.text((24, 18), "S2 imbalance method comparison on validation", fill=(0, 0, 0))
-    legend_x = 650
-    for idx, experiment in enumerate(EXPERIMENT_ORDER):
-        y = 18 + idx * 24
-        draw.rectangle((legend_x, y, legend_x + 18, y + 14), fill=colors[experiment])
-        draw.text((legend_x + 26, y - 2), experiment, fill=(0, 0, 0))
-    panel_y = 70
-    for title, metrics in panels:
-        draw.text((24, panel_y), title, fill=(0, 0, 0))
-        y = panel_y + 36
-        max_value = max(float(rows[col].max(skipna=True)) for col, _ in metrics if col in rows.columns)
-        max_value = max(max_value, 1e-6)
-        for col, label in metrics:
-            draw.text((24, y + 17), label, fill=(0, 0, 0))
-            for exp_idx, experiment in enumerate(EXPERIMENT_ORDER):
-                value = float(rows.loc[rows["experiment"] == experiment, col].iloc[0]) if col in rows.columns else float("nan")
-                bar_y = y + exp_idx * 22
-                if np.isfinite(value):
-                    width = int(800 * value / max_value)
-                    draw.rectangle((150, bar_y, 150 + width, bar_y + 15), fill=colors[experiment])
-                    draw.text((158 + width, bar_y - 2), f"{value:.3f}", fill=(0, 0, 0))
-                else:
-                    draw.text((150, bar_y - 2), "n/a", fill=(120, 120, 120))
-            y += 84
-        panel_y = y + 28
-    canvas.save(FIGURE_DIR / "s2_imbalance_methods_comparison.png")
-
-
-def recommend_configuration(rows: pd.DataFrame) -> str:
-    ranked = rows.sort_values(["mean_iou", "macro_dice"], ascending=False).reset_index(drop=True)
-    top = str(ranked.loc[0, "experiment"])
-    if top == "balanced_sampling":
-        return "balanced_sampling"
-    if top == "weighted_loss":
-        return "weighted_loss"
-    return "baseline"
-
-
-def write_selection_doc(rows: pd.DataFrame, balanced: dict[str, object]) -> None:
-    DOCS_DIR.mkdir(exist_ok=True)
-    strata = balanced["strata_summary"]
-    rec = recommend_configuration(rows)
-    row = rows[rows["experiment"] == rec].iloc[0]
-    table_lines = [
-        "| Experiment | Macro mIoU | Macro Dice | IoU 0 | IoU 1 | IoU 2 | IoU 3 | Binary algae IoU | Binary algae Dice | Pred C0 | Pred C1 | Pred C2 | Pred C3 |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
-    ]
-    for exp in EXPERIMENT_ORDER:
-        r = rows[rows["experiment"] == exp].iloc[0]
-        table_lines.append(
-            f"| {exp} | {r['mean_iou']:.4f} | {r['macro_dice']:.4f} | {r['iou_background']:.4f} | "
-            f"{r['iou_low']:.4f} | {r['iou_mid']:.4f} | {r['iou_high']:.4f} | "
-            f"{r['binary_algae_iou']:.4f} | {r['binary_algae_dice']:.4f} | "
-            f"{r.get('predicted_class_0_fraction', np.nan):.4f} | {r.get('predicted_class_1_fraction', np.nan):.4f} | "
-            f"{r.get('predicted_class_2_fraction', np.nan):.4f} | {r.get('predicted_class_3_fraction', np.nan):.4f} |"
-        )
-    strata_lines = [
-        "| Stratum | Tiles | Capped sampler weight | Expected sample fraction |",
-        "|---|---:|---:|---:|",
-    ]
-    for s in strata.itertuples(index=False):
-        strata_lines.append(
-            f"| {s.stratum} | {int(s.tile_count)} | {float(s.sampler_weight_capped):.4f} | {float(s.expected_fraction_after_sampling):.4f} |"
-        )
-    doc = f"""# S2 Baseline Selection
-
-Phase 2G compares three Sentinel-2-only configurations on the validation split only. The Phase 2D test result remains frozen and was not re-evaluated.
-
-## Balanced-Sampling Rule
-
-Each training tile is assigned to the highest algae severity stratum that is meaningfully present. A class is meaningful when it has at least `{MIN_ALGAE_PIXELS}` valid pixels and at least `{MIN_ALGAE_FRACTION:.1%}` of the tile's valid pixels. The scan order is high, mid, low; tiles with no algae class passing both thresholds are assigned to background/no algae.
-
-Sampler weights use inverse-square-root stratum frequency and are capped so the largest present stratum weight is at most `{MAX_SAMPLER_WEIGHT_RATIO:.1f}` times the smallest present stratum weight.
-
-{chr(10).join(strata_lines)}
-
-## Validation Comparison
-
-{chr(10).join(table_lines)}
-
-## Recommendation
-
-Carry forward `{rec}` as the conventional optical baseline. It has validation macro mIoU `{row['mean_iou']:.4f}`, macro Dice `{row['macro_dice']:.4f}`, and binary algae IoU `{row['binary_algae_iou']:.4f}`. The recommendation is based on validation performance and class behaviour only.
-
-## Notes
-
-The balanced-sampling run kept the loss unweighted. No SAR, fusion, focal loss, architecture change, or test-set evaluation was used.
-"""
-    (DOCS_DIR / "S2_BASELINE_SELECTION.md").write_text(doc, encoding="utf-8")
-
-
 def main() -> None:
     os.environ.setdefault("TORCH_HOME", str(PROJECT_ROOT / ".torch"))
     RESULT_DIR.mkdir(parents=True, exist_ok=True)
-    FIGURE_DIR.mkdir(exist_ok=True)
-    DOCS_DIR.mkdir(exist_ok=True)
     balanced = train_balanced_sampling()
     rows = comparison_rows(balanced)
     rows.to_csv(RESULT_DIR / "validation_comparison.csv", index=False)
-    save_comparison_figure(rows)
-    write_selection_doc(rows, balanced)
-    payload = {
-        "comparison": rows.to_dict(orient="records"),
-        "balanced_sampling": balanced["training_summary"],
-        "recommendation": recommend_configuration(rows),
-    }
-    (RESULT_DIR / "s2_baseline_selection.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    print(json.dumps(payload, indent=2))
+    print(rows.to_string(index=False))
+
 
 
 if __name__ == "__main__":
     main()
-

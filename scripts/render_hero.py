@@ -1,7 +1,7 @@
 """Draw original schematic portfolio assets using frozen summary numbers only."""
 from pathlib import Path
-import csv
-import json
+import sys
+from presentation_data import load_summary
 import os
 from xml.sax.saxutils import escape
 
@@ -12,7 +12,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch, Rectangle
 
-BG='#f5f6f0'; INK='#173c39'; MUTED='#526763'; TEAL='#176c60'; GOLD='#a66020'
+sys.path.insert(0, str(ROOT))
+from src.visualization.style import configure, INK, TEAL, ORANGE, CLASS_COLORS
+BG='#f5f6f0'; MUTED='#526763'; GOLD=ORANGE
 
 def card(ax,x,y,w,h,color='white',edge='#d4ded7'):
     ax.add_patch(FancyBboxPatch((x,y),w,h,boxstyle='round,pad=0.008,rounding_size=0.012',
@@ -25,15 +27,15 @@ def arrow(ax,a,b):
     ax.add_patch(FancyArrowPatch(a,b,arrowstyle='-|>',mutation_scale=18,linewidth=1.7,color=TEAL))
 
 def headlines():
-    with (ROOT/'results/final_test/clean_test_results.csv').open(newline='',encoding='utf-8') as f:
-        rows={r['model']:r for r in csv.DictReader(f)}
-    summary=json.loads((ROOT/'results/final_test/final_summary.json').read_text())
-    occ=next(r for r in summary['robustness_summary'] if r['model']=='occlusion_trained' and r['condition']=='occlusion_70')
-    def value(r,k): return f"{float(r[k+'_mean']):.4f} ± {float(r[k+'_std']):.4f}"
-    return [value(rows['occlusion_trained'],'mean_iou'),value(occ,'mean_iou'),value(rows['terramind_frozen'],'binary_algae_dice')]
+    data = load_summary()
+    models = {m['id']: m for m in data['models']}
+    occ = next(r['mean_iou'] for r in data['robustness'] if r['model']=='occlusion_trained' and r['condition']=='occlusion_70')
+    values = [models['occlusion_trained']['clean']['mean_iou'], occ, models['terramind_frozen']['clean']['binary_algae_dice']]
+    return [f"{v['mean']:.3f} ± {v['std']:.3f}" for v in values]
+
 
 def main():
-    plt.rcParams.update({'font.family':'DejaVu Sans','svg.fonttype':'none','svg.hashsalt':'geoai-final'})
+    configure()
     vals=headlines()
     fig,ax=plt.subplots(figsize=(14.4,9.6),dpi=150)
     fig.patch.set_facecolor(BG); ax.set(xlim=(0,1),ylim=(0,1)); ax.axis('off')
@@ -52,7 +54,7 @@ def main():
     arrow(ax,(.291,.704),(.373,.641)); arrow(ax,(.291,.548),(.373,.603)); arrow(ax,(.637,.63),(.704,.63))
     card(ax,.721,.508,.225,.24)
     text(ax,.738,.708,'Algae severity',22,weight='bold')
-    for i,(name,color) in enumerate([('Background','#3d4746'),('Low algae','#6a9950'),('Mid algae','#dfa835'),('High algae','#be5949')]):
+    for i,(name,color) in enumerate(zip(['Background','Low algae','Mid algae','High algae'],CLASS_COLORS)):
         y=.657-i*.04
         ax.add_patch(Rectangle((.741,y-.010),.017,.020,color=color))
         text(ax,.772,y,name,14,MUTED)
@@ -74,7 +76,7 @@ def main():
         text(ax,x+.01,.198,label,13,MUTED)
         text(ax,x+.01,.128,value,23,TEAL,'bold')
         text(ax,x+.01,.083,note,13,MUTED)
-    fig.savefig(ROOT/'figures/hero_overview.png',dpi=150)
+    text(ax,.05,.022,'Mean ± sample SD: clean = 3 training seeds; occlusion = 9 pooled training × corruption runs.',10,MUTED)
     fig.savefig(ROOT/'figures/hero_overview.svg',metadata={'Date':None})
     svg=ROOT/'figures/hero_overview.svg'
     svg.write_text('\n'.join(s.rstrip() for s in svg.read_text(encoding='utf-8').replace("font-family: 'DejaVu Sans'", "font-family: 'DejaVu Sans', Arial, sans-serif").splitlines())+'\n',encoding='utf-8')

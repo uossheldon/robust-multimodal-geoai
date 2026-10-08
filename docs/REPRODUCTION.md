@@ -14,7 +14,7 @@ python -m http.server 8000 --bind 127.0.0.1 --directory .site-build
 
 The first two commands compile the Python sources, verify path handling, validate the published metrics and build the reviewed static site. They do not require the dataset, checkpoints or a GPU.
 
-Optional regeneration of the final presentation figures requires Matplotlib:
+Optional regeneration of the final presentation figures requires Matplotlib and NumPy. The renderer only reads saved metrics:
 
 ```bash
 python scripts/presentation_data.py
@@ -33,7 +33,7 @@ Main experiment entry points and saved records:
 
 | Experiment | Implementation | Saved record |
 |---|---|---|
-| Data alignment / manifest | `src/data/` | `results/tile_manifest.csv`, `results/per_date_statistics.csv` |
+| Data alignment / manifest | `python -m src.data.build_manifest` | `results/tile_manifest.csv`, `results/per_date_statistics.csv` |
 | Sentinel-2 / Sentinel-1 / early fusion | `src/training/` | model-specific result folders |
 | Modality dropout | `src/training/train_modality_dropout_fusion.py` | `results/modality_dropout/` |
 | Occlusion-aware training | `src/training/occlusion_training.py` | `results/occlusion_training/` |
@@ -45,7 +45,7 @@ Main experiment entry points and saved records:
 
 The validated Colab stack used a T4 GPU, torch 2.11.0+cu128, numpy 2.2.6, TerraTorch 1.2.13 and TorchGeo 0.9.0.
 
-Use [COLAB_WORKFLOW.md](COLAB_WORKFLOW.md) and:
+Run the decoder-only benchmark:
 
 ```bash
 python scripts/run_terramind.py --batch-size 4 --epochs 10 --seed 42 --data-root /content/geoai_data/SummerSchool_Subset
@@ -64,3 +64,44 @@ data/raw/SummerSchool_Subset/
 or provide the TerraMind runner with an explicit `--data-root`.
 
 Raw imagery, masks, checkpoints and caches are intentionally not distributed. See [Data provenance](DATA_PROVENANCE.md) and [data layout](../data/README.md).
+
+## Colab setup
+
+### 1. Clone the repository
+
+```bash
+cd /content
+git clone https://github.com/uossheldon/robust-multimodal-geoai.git
+cd robust-multimodal-geoai
+```
+
+### 2. Install TerraMind dependencies
+
+```bash
+pip install -q terratorch==1.2.13 torchgeo==0.9.0 numpy==2.2.6 "setuptools<81"
+```
+
+Verify the resolved PyTorch build before training. Do not replace the Colab CUDA toolkit.
+
+### 3. Prepare the dataset
+
+Place or extract the prepared Summer School subset at:
+
+```text
+/content/geoai_data/SummerSchool_Subset/
+```
+
+Expected structure:
+
+```text
+images/<YYYY-MM-DD>/layers/
+masks/
+```
+
+The dataset itself is not distributed by this repository.
+
+The runner checks a real multimodal batch, output shape, finite loss, frozen backbone, decoder gradients, split counts and exclusion of test dates before training. Copy outputs to storage you control before ending a Colab runtime. Do not change the frozen settings after inspecting validation or test scores.
+
+## Result and figure sources
+
+The retained [result inventory](../results/README.md) identifies canonical aggregates, per-run evidence and supporting metadata. `scripts/presentation_data.py` is the result-loading entry point; `scripts/render_final_presentation.py` renders the eight research charts and `scripts/render_hero.py` renders the schematic and social preview using `src/visualization/style.py`. The site packages only the explicit allowlist in `scripts/build_site.py`. CI checks source and saved evidence without running models.

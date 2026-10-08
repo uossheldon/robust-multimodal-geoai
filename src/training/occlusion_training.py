@@ -5,7 +5,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
-from PIL import Image, ImageDraw
 from torch import nn
 from torch.utils.data import DataLoader
 
@@ -19,8 +18,6 @@ from src.models.deeplab import create_fusion_deeplab
 from src.training.train_s2_deeplab import run_epoch, seed_everything
 
 RESULT_DIR=PROJECT_ROOT/'results'/'occlusion_training'
-FIGURE_DIR=PROJECT_ROOT/'figures'
-DOCS_DIR=PROJECT_ROOT/'docs'
 CHECKPOINT_DIR=PROJECT_ROOT/'checkpoints'
 MANIFEST_PATH=PROJECT_ROOT/'results'/'tile_manifest.csv'
 TRAIN_SEEDS=[42,7,123]
@@ -80,8 +77,6 @@ def train_one(seed,stats,weights,device):
             torch.save({'epoch':epoch,'model_state_dict':model.state_dict(),'optimizer_state_dict':opt.state_dict(),'validation_metrics':va,'validation_confusion_matrix':conf.numpy().tolist(),'sar_statistics':stats,'seed':seed},ckpt)
     torch.cuda.synchronize(); return {'seed':seed,'reused':False,'best_epoch':best_epoch,'training_time_seconds':time.perf_counter()-start,'checkpoint':str(ckpt.relative_to(PROJECT_ROOT))}
 
-def prediction_fractions_from_conf(row):
-    return {}
 
 def eval_seed(seed,stats,device):
     _,val_loader=loaders(stats,seed)
@@ -131,43 +126,10 @@ def auc_table(agg):
         rows.append({'method':method,'macro_miou_auc_0_70':float(np.trapezoid(vals,xs))})
     return pd.DataFrame(rows)
 
-def save_figures(allagg):
-    def fig(path,title,conds,metric='mean_iou'):
-        canvas=Image.new('RGB',(1100,560),'white'); draw=ImageDraw.Draw(canvas); draw.text((24,18),title,fill=(0,0,0))
-        methods=['original','modality_dropout','occlusion_training']; colors={'original':(210,120,50),'modality_dropout':(80,130,210),'occlusion_training':(90,160,95)}
-        maxv=max(float(allagg[f'{metric}_mean'].max()),1e-6); y=70
-        for cond in conds:
-            draw.text((24,y+22),cond,fill=(0,0,0))
-            for i,m in enumerate(methods):
-                r=allagg[(allagg.method==m)&(allagg.primary_condition==cond)]
-                if r.empty: continue
-                mean=float(r[f'{metric}_mean'].iloc[0]); std=float(r[f'{metric}_std'].iloc[0]); w=int(650*mean/maxv); yy=y+i*22
-                draw.rectangle((230,yy,230+w,yy+15),fill=colors[m]); draw.text((238+w,yy-2),f'{m} {mean:.3f}±{std:.3f}',fill=(0,0,0))
-            y+=88
-        canvas.save(path)
-    fig(FIGURE_DIR/'robust_methods_comparison.png','Robust method comparison',['clean','missing_s1_zero','missing_s2_zero'])
-    fig(FIGURE_DIR/'corruption_training_robustness_curve.png','Simulated optical occlusion robustness',['occlusion_0','occlusion_10','occlusion_30','occlusion_50','occlusion_70'])
-    fig(FIGURE_DIR/'corruption_training_per_class.png','70% occlusion per-class IoU',['occlusion_70'],metric='iou_high')
-    # simple placeholder qualitative from existing robustness fig copied conceptually
-    src=FIGURE_DIR/'robustness_qualitative_examples.png'; dst=FIGURE_DIR/'corruption_training_qualitative.png'
-    if src.exists(): dst.write_bytes(src.read_bytes())
-
-def write_doc(summary):
-    doc=f"""# Occlusion-Aware Training
-
-Phase 4B2 keeps the five-channel early-fusion architecture and modality-dropout probabilities fixed. The only new training change is simulated optical occlusion on half of intact both-modality training samples, with occlusion fraction sampled uniformly from 10% to 70%.
-
-These masks are simulated optical occlusion, not real clouds. No test dates were evaluated.
-
-Training seeds: `{TRAIN_SEEDS}`.
-
-Conclusion: {summary['conclusion']}
-"""
-    (DOCS_DIR/'OCCLUSION_AWARE_TRAINING.md').write_text(doc,encoding='utf-8')
 
 def main():
     os.environ.setdefault('TORCH_HOME',str(PROJECT_ROOT/'.torch'))
-    for d in [RESULT_DIR,FIGURE_DIR,DOCS_DIR,CHECKPOINT_DIR]: d.mkdir(parents=True,exist_ok=True)
+    for d in [RESULT_DIR,CHECKPOINT_DIR]: d.mkdir(parents=True,exist_ok=True)
     device=torch.device('cuda'); torch.cuda.reset_peak_memory_stats(device)
     stats=fit_sar_train_statistics(MANIFEST_PATH,project_root=PROJECT_ROOT); weights=train_class_weights()
     infos=[]; rows=[]
@@ -177,12 +139,10 @@ def main():
     occagg=aggregate(per); baseagg=load_comparison_methods(); allagg=pd.concat([baseagg,occagg],ignore_index=True)
     allagg.to_csv(RESULT_DIR/'aggregate_results.csv',index=False)
     auc=auc_table(allagg); auc.to_csv(RESULT_DIR/'robustness_auc.csv',index=False)
-    save_figures(allagg)
     def val(method,cond): return float(allagg[(allagg.method==method)&(allagg.primary_condition==cond)].mean_iou_mean.iloc[0])
     conclusion='Partial-occlusion training adds value beyond modality dropout for optical occlusion.' if val('occlusion_training','occlusion_70')>val('modality_dropout','occlusion_70') else 'Partial-occlusion training did not improve 70% occlusion macro mIoU over modality dropout.'
-    summary={'training_seeds':TRAIN_SEEDS,'occlusion_eval_seeds':OCC_SEEDS,'train_runs':infos,'peak_gpu_memory_mb':float(torch.cuda.max_memory_allocated(device)/(1024**2)),'conclusion':conclusion,'aggregate':allagg.to_dict(orient='records'),'auc':auc.to_dict(orient='records')}
+    summary={'training_seeds':TRAIN_SEEDS,'occlusion_eval_seeds':OCC_SEEDS,'train_runs':infos,'peak_gpu_memory_mb':float(torch.cuda.max_memory_allocated(device)/(1024**2)),'conclusion':conclusion}
     (RESULT_DIR/'summary.json').write_text(json.dumps(summary,indent=2),encoding='utf-8')
-    write_doc(summary)
     print(json.dumps({'conclusion':conclusion,'peak_gpu_memory_mb':summary['peak_gpu_memory_mb']},indent=2))
 
 if __name__=='__main__': main()

@@ -78,7 +78,7 @@ def run_smoke(project_root: Path) -> dict[str, object]:
     seed_everything(42)
     os.environ.setdefault("TORCH_HOME", str(project_root / ".torch"))
     if not torch.cuda.is_available():
-        raise RuntimeError("CUDA is required for Phase 2C smoke tests.")
+        raise RuntimeError("CUDA is required for GPU smoke tests.")
     device = torch.device("cuda")
     torch.cuda.reset_peak_memory_stats(device)
     train_loader, validation_loader = make_loaders(project_root, batch_size=2, train_subset=8, validation_subset=4)
@@ -115,4 +115,3 @@ def run_smoke(project_root: Path) -> dict[str, object]:
         "validation_tiles": len(validation_loader.dataset),
         "history": history,
     }
-

@@ -22,7 +22,7 @@ An earlier exploratory unweighted Sentinel-2 run had already been evaluated on t
 | Occlusion-trained fusion | 3 seeds | **0.1882 ± 0.0293** | **0.3033 ± 0.0380** | 0.6151 ± 0.0289 |
 | Frozen TerraMind | 3 seeds | 0.1718 ± 0.0177 | 0.2843 ± 0.0235 | **0.6821 ± 0.0025** |
 
-![Clean test comparison](../figures/final_clean_model_comparison.png)
+![Clean test comparison](../figures/final_clean_model_comparison.svg)
 
 The robust methods and TerraMind report sample SD across training seeds 42, 7 and 123. Conventional baselines are single selected runs.
 
@@ -37,7 +37,7 @@ The robust methods and TerraMind report sample SD across training seeds 42, 7 an
 | Occlusion-trained fusion | 0.2542 ± 0.0721 | 0.3074 ± 0.0403 | 0.0504 ± 0.0172 | 0.1406 ± 0.0042 |
 | Frozen TerraMind | 0.2099 ± 0.0166 | 0.2557 ± 0.0604 | 0.0449 ± 0.0094 | 0.1766 ± 0.0275 |
 
-![Per-class IoU](../figures/final_per_class_iou.png)
+![Per-class IoU](../figures/final_per_class_iou.svg)
 
 Mid-algae segmentation remains weak across all methods. Binary algae detection should therefore not be treated as equivalent to four-class severity mapping.
 
@@ -53,7 +53,7 @@ Mid-algae segmentation remains weak across all methods. Binary algae detection s
 | Sentinel-1 missing | 0.1141 ± 0.0166 | 0.1204 ± 0.0264 |
 | Sentinel-2 missing | 0.1690 ± 0.0176 | 0.1993 ± 0.0164 |
 
-![Robustness comparison](../figures/final_robustness_curves.png)
+![Robustness comparison](../figures/final_robustness_curves.svg)
 
 Optical-occlusion SD pools 3 training seeds × 3 corruption seeds. Clean and missing-modality SDs are across 3 training seeds. These variability estimates describe different populations and are not confidence intervals.
 

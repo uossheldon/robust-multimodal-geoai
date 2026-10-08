@@ -4,7 +4,7 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.data.terramind_dataset import resolve_terramind_paths
+from src.data.paths import resolve_terramind_paths
 
 
 def test_resolve_terramind_paths_from_windows_style_root():

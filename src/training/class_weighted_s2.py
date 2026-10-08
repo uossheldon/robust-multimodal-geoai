@@ -9,24 +9,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
-from PIL import Image, ImageDraw
 from torch import nn
-from torch.utils.data import DataLoader, Subset
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.data.s2_dataset import S2RGBSegmentationDataset
 from src.evaluation.diagnostics import binary_metrics_from_multiclass
-from src.evaluation.segmentation import segmentation_metrics
 from src.models.deeplab import create_s2_deeplab
 from src.training.train_s2_deeplab import make_loader, run_epoch, seed_everything
 
 
 RESULT_DIR = PROJECT_ROOT / "results" / "s2_deeplab_weighted"
 BASELINE_DIR = PROJECT_ROOT / "results" / "s2_deeplab"
-FIGURE_DIR = PROJECT_ROOT / "figures"
-DOCS_DIR = PROJECT_ROOT / "docs"
 CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
 
 
@@ -154,90 +148,10 @@ def binary_metrics(model: torch.nn.Module) -> dict[str, float]:
     return binary_metrics_from_multiclass(model, torch.device("cuda"))
 
 
-def save_comparison_figure(rows: pd.DataFrame) -> None:
-    canvas = Image.new("RGB", (980, 460), "white")
-    draw = ImageDraw.Draw(canvas)
-    draw.text((24, 18), "Validation: baseline vs class-weighted loss", fill=(0, 0, 0))
-    metrics = [
-        ("mean_iou", "macro mIoU"),
-        ("macro_dice", "macro Dice"),
-        ("iou_background", "IoU 0"),
-        ("iou_low", "IoU 1"),
-        ("iou_mid", "IoU 2"),
-        ("iou_high", "IoU 3"),
-    ]
-    max_value = max(float(rows[column].max()) for column, _ in metrics) or 1.0
-    y = 70
-    for column, label in metrics:
-        draw.text((24, y + 10), label, fill=(0, 0, 0))
-        for idx, experiment in enumerate(("baseline", "weighted")):
-            value = float(rows.loc[rows["experiment"] == experiment, column].iloc[0])
-            width = int(620 * value / max_value)
-            x = 180
-            yy = y + idx * 22
-            color = (80, 130, 210) if experiment == "baseline" else (215, 105, 60)
-            draw.rectangle((x, yy, x + width, yy + 16), fill=color)
-            draw.text((x + width + 8, yy), f"{experiment} {value:.3f}", fill=(0, 0, 0))
-        y += 62
-    canvas.save(FIGURE_DIR / "s2_baseline_vs_weighted.png")
-
-
-def write_doc(payload: dict[str, object]) -> None:
-    comparison = pd.DataFrame(payload["comparison"])
-    original_counts = payload["tiny_original_counts"]
-    representative_counts = payload["tiny_representative_counts"]
-    weights = payload["class_weights"]
-    doc = f"""# Class Imbalance Experiment
-
-Phase 2F keeps the split, model, RGB preprocessing, augmentations, optimizer, learning rates, batch size and 10-epoch budget fixed. The only full-training change is class-weighted `CrossEntropyLoss`.
-
-## Tiny-Subset Inspection
-
-The original Phase 2E first-16-tile subset had pixel counts:
-
-- class 0: `{original_counts['class_0']}`
-- class 1: `{original_counts['class_1']}`
-- class 2: `{original_counts['class_2']}`
-- class 3: `{original_counts['class_3']}`
-
-Because mid/high were poorly represented, a representative 16-tile subset was selected from training tiles with high class counts:
-
-- class 0: `{representative_counts['class_0']}`
-- class 1: `{representative_counts['class_1']}`
-- class 2: `{representative_counts['class_2']}`
-- class 3: `{representative_counts['class_3']}`
-
-This subset was inspected only; it did not change the main experiment.
-
-## Train-Only Class Weights
-
-Inverse-square-root frequency weights, normalized to mean 1:
-
-- class 0: `{weights['class_0']:.4f}`
-- class 1: `{weights['class_1']:.4f}`
-- class 2: `{weights['class_2']:.4f}`
-- class 3: `{weights['class_3']:.4f}`
-
-## Validation Comparison
-
-| Experiment | Macro mIoU | Macro Dice | IoU 0 | IoU 1 | IoU 2 | IoU 3 | Binary algae IoU | Binary algae Dice |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Baseline | {comparison.loc[0, 'mean_iou']:.4f} | {comparison.loc[0, 'macro_dice']:.4f} | {comparison.loc[0, 'iou_background']:.4f} | {comparison.loc[0, 'iou_low']:.4f} | {comparison.loc[0, 'iou_mid']:.4f} | {comparison.loc[0, 'iou_high']:.4f} | {comparison.loc[0, 'binary_algae_iou']:.4f} | {comparison.loc[0, 'binary_algae_dice']:.4f} |
-| Weighted | {comparison.loc[1, 'mean_iou']:.4f} | {comparison.loc[1, 'macro_dice']:.4f} | {comparison.loc[1, 'iou_background']:.4f} | {comparison.loc[1, 'iou_low']:.4f} | {comparison.loc[1, 'iou_mid']:.4f} | {comparison.loc[1, 'iou_high']:.4f} | {comparison.loc[1, 'binary_algae_iou']:.4f} | {comparison.loc[1, 'binary_algae_dice']:.4f} |
-
-## Interpretation
-
-Class weighting is a controlled S2-only intervention. It should be judged on validation only. Test results remain frozen from Phase 2D.
-"""
-    (DOCS_DIR / "CLASS_IMBALANCE_EXPERIMENT.md").write_text(doc, encoding="utf-8")
-
-
 def main() -> None:
     os.environ.setdefault("TORCH_HOME", str(PROJECT_ROOT / ".torch"))
     seed_everything(42)
     RESULT_DIR.mkdir(parents=True, exist_ok=True)
-    FIGURE_DIR.mkdir(exist_ok=True)
-    DOCS_DIR.mkdir(exist_ok=True)
     original_counts = class_counts_for_indices(list(range(16)))
     rep_indices = representative_indices()
     representative_counts = class_counts_for_indices(rep_indices)
@@ -253,7 +167,6 @@ def main() -> None:
         ]
     )
     comparison.to_csv(RESULT_DIR / "validation_comparison.csv", index=False)
-    save_comparison_figure(comparison)
     payload = {
         "train_class_counts": train_counts,
         "class_weights": weights,
@@ -265,10 +178,8 @@ def main() -> None:
         "comparison": comparison.to_dict(orient="records"),
     }
     (RESULT_DIR / "class_imbalance_experiment.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    write_doc(payload)
     print(json.dumps(payload, indent=2))
 
 
 if __name__ == "__main__":
     main()
-

@@ -34,28 +34,6 @@
     "class_2": 0.6517378770569545,
     "class_3": 2.395730250869347
   },
-  "smoke_test": {
-    "input_shape": [
-      8,
-      2,
-      224,
-      224
-    ],
-    "target_shape": [
-      8,
-      224,
-      224
-    ],
-    "logit_shape": [
-      8,
-      4,
-      224,
-      224
-    ],
-    "loss": 1.518588900566101,
-    "loss_finite": true,
-    "cuda_used": true
-  },
   "validation_metrics": {
     "pixel_accuracy": 0.5510247945785522,
     "mean_iou": 0.23491951823234558,
@@ -123,39 +101,5 @@
       972,
       12792
     ]
-  ],
-  "s2_weighted_validation_metrics": {
-    "mean_iou": 0.2274367362260818,
-    "macro_dice": 0.3497128784656524,
-    "iou_background": 0.4229185879230499,
-    "iou_low": 0.2617058753967285,
-    "iou_mid": 0.1845677196979522,
-    "iou_high": 0.0405548103153705,
-    "binary_algae_iou": 0.3883777260780334,
-    "binary_algae_dice": 0.5594698190689087
-  },
-  "validation_comparison": [
-    {
-      "experiment": "s2_weighted",
-      "mean_iou": 0.2274367362260818,
-      "macro_dice": 0.3497128784656524,
-      "iou_background": 0.4229185879230499,
-      "iou_low": 0.2617058753967285,
-      "iou_mid": 0.1845677196979522,
-      "iou_high": 0.0405548103153705,
-      "binary_algae_iou": 0.3883777260780334,
-      "binary_algae_dice": 0.5594698190689087
-    },
-    {
-      "experiment": "s1_weighted",
-      "mean_iou": 0.23491951823234558,
-      "macro_dice": 0.34970271587371826,
-      "iou_background": 0.45189374685287476,
-      "iou_low": 0.33403313159942627,
-      "iou_mid": 0.021033428609371185,
-      "iou_high": 0.13271774351596832,
-      "binary_algae_iou": 0.3401576280593872,
-      "binary_algae_dice": 0.5076382160186768
-    }
   ]
 }

@@ -9,7 +9,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
-from PIL import Image, ImageDraw
 from torch import nn
 from torch.utils.data import DataLoader
 
@@ -17,25 +16,15 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.data.s1_dataset import S1SARSegmentationDataset, fit_sar_train_statistics
-from src.evaluation.segmentation import confusion_matrix, segmentation_metrics
 from src.models.deeplab import create_sar_deeplab
 from src.training.train_s2_deeplab import class_metrics_frame, run_epoch, seed_everything
 
 RESULT_DIR = PROJECT_ROOT / "results" / "s1_deeplab_weighted"
-FIGURE_DIR = PROJECT_ROOT / "figures"
 CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
 CONFIG_DIR = PROJECT_ROOT / "configs"
-DOCS_DIR = PROJECT_ROOT / "docs"
 MANIFEST_PATH = PROJECT_ROOT / "results" / "tile_manifest.csv"
 
 CLASS_NAMES = ["background", "low_algae", "mid_algae", "high_algae"]
-CLASS_COLORS = {
-    0: (40, 40, 40),
-    1: (121, 190, 85),
-    2: (247, 188, 65),
-    3: (218, 83, 63),
-    255: (210, 210, 210),
-}
 
 
 def train_class_weights() -> tuple[dict[str, int], dict[str, float]]:
@@ -147,128 +136,6 @@ def smoke_test(stats: dict[str, object], weights: dict[str, float], device: torc
     }
 
 
-def save_curves(history: pd.DataFrame) -> None:
-    canvas = Image.new("RGB", (900, 360), "white")
-    draw = ImageDraw.Draw(canvas)
-    draw.text((24, 16), "S1 DeepLab weighted training curves", fill=(0, 0, 0))
-    panels = [("Loss", "train_loss", "validation_loss", 50, 70), ("Validation macro mIoU", None, "validation_mean_iou", 500, 70)]
-    for title, train_col, val_col, x0, y0 in panels:
-        draw.text((x0, y0 - 28), title, fill=(0, 0, 0))
-        draw.rectangle((x0, y0, x0 + 330, y0 + 220), outline=(0, 0, 0))
-        values = []
-        if train_col:
-            values.extend(history[train_col].tolist())
-        values.extend(history[val_col].tolist())
-        lo, hi = min(values), max(values)
-        if hi <= lo:
-            hi = lo + 1.0
-        def points(column: str) -> list[tuple[int, int]]:
-            series = history[column].tolist()
-            return [(x0 + int(idx * 330 / max(1, len(series) - 1)), y0 + 220 - int((value - lo) * 220 / (hi - lo))) for idx, value in enumerate(series)]
-        if train_col:
-            draw.line(points(train_col), fill=(70, 120, 210), width=3)
-            draw.text((x0, y0 + 232), "train", fill=(70, 120, 210))
-        draw.line(points(val_col), fill=(210, 80, 80), width=3)
-        draw.text((x0 + 90, y0 + 232), "validation", fill=(210, 80, 80))
-    canvas.save(FIGURE_DIR / "s1_training_curves.png")
-
-
-def save_per_class_iou(metrics: dict[str, float]) -> None:
-    frame = class_metrics_frame(metrics)
-    canvas = Image.new("RGB", (760, 360), "white")
-    draw = ImageDraw.Draw(canvas)
-    draw.text((24, 18), "S1 validation per-class IoU", fill=(0, 0, 0))
-    max_iou = max(float(frame["iou"].max()), 1e-6)
-    for idx, row in enumerate(frame.itertuples(index=False)):
-        y = 70 + idx * 64
-        width = int(500 * float(row.iou) / max_iou)
-        draw.text((24, y + 12), str(row.class_name), fill=(0, 0, 0))
-        draw.rectangle((170, y, 170 + width, y + 42), fill=CLASS_COLORS[int(row.class_id)])
-        draw.text((182 + width, y + 12), f"{row.iou:.3f}", fill=(0, 0, 0))
-    canvas.save(FIGURE_DIR / "s1_per_class_iou.png")
-
-
-def color_mask(mask: np.ndarray) -> np.ndarray:
-    out = np.zeros((*mask.shape, 3), dtype=np.uint8)
-    for value, color in CLASS_COLORS.items():
-        out[mask == value] = color
-    return out
-
-
-def stretch_channel(channel: torch.Tensor) -> np.ndarray:
-    array = channel.detach().cpu().numpy().astype(np.float32)
-    finite = np.isfinite(array)
-    if finite.any():
-        lo, hi = np.percentile(array[finite], [2, 98])
-        if hi <= lo:
-            hi = lo + 1.0
-        array = np.clip((array - lo) / (hi - lo), 0, 1)
-    else:
-        array = np.zeros_like(array)
-    return (array * 255).astype(np.uint8)
-
-
-def save_qualitative(model: nn.Module, loader: DataLoader, stats: dict[str, object], device: torch.device, max_examples: int = 4) -> None:
-    mean = torch.tensor(stats["mean"], dtype=torch.float32).view(2, 1, 1)
-    std = torch.tensor(stats["std"], dtype=torch.float32).view(2, 1, 1)
-    examples = []
-    model.eval()
-    with torch.inference_mode(), torch.amp.autocast("cuda", enabled=device.type == "cuda"):
-        for images, targets in loader:
-            logits = model(images.to(device))["out"]
-            preds = logits.argmax(dim=1).cpu()
-            raw = images.cpu() * std + mean
-            for image, target, pred in zip(raw, targets, preds):
-                valid = target != 255
-                error = torch.full_like(target, 255)
-                error[valid & (pred == target)] = 0
-                error[valid & (pred != target)] = 3
-                vv_rgb = np.repeat(stretch_channel(image[0])[:, :, None], 3, axis=2)
-                vh_rgb = np.repeat(stretch_channel(image[1])[:, :, None], 3, axis=2)
-                examples.append((vv_rgb, vh_rgb, color_mask(target.numpy()), color_mask(pred.numpy()), color_mask(error.numpy())))
-                if len(examples) >= max_examples:
-                    break
-            if len(examples) >= max_examples:
-                break
-    tile = 224
-    label_h = 28
-    canvas = Image.new("RGB", (tile * 5, (tile + label_h) * len(examples)), "white")
-    draw = ImageDraw.Draw(canvas)
-    labels = ["VV", "VH", "Ground Truth", "SAR Prediction", "Error Map"]
-    for row, example in enumerate(examples):
-        y = row * (tile + label_h)
-        for col, array in enumerate(example):
-            x = col * tile
-            draw.text((x + 8, y + 7), labels[col], fill=(0, 0, 0))
-            canvas.paste(Image.fromarray(array), (x, y + label_h))
-    canvas.save(FIGURE_DIR / "s1_qualitative_predictions.png")
-
-
-def save_s1_vs_s2(s1: dict[str, float], s2: dict[str, float]) -> None:
-    rows = pd.DataFrame([
-        {"experiment": "S2 weighted", **s2},
-        {"experiment": "S1 weighted", **s1},
-    ])
-    canvas = Image.new("RGB", (980, 520), "white")
-    draw = ImageDraw.Draw(canvas)
-    draw.text((24, 18), "Validation: selected S2 weighted vs S1 SAR weighted", fill=(0, 0, 0))
-    metrics = [("mean_iou", "macro mIoU"), ("macro_dice", "macro Dice"), ("iou_background", "IoU 0"), ("iou_low", "IoU 1"), ("iou_mid", "IoU 2"), ("iou_high", "IoU 3"), ("binary_algae_iou", "Binary algae IoU")]
-    max_value = max(float(rows[column].max()) for column, _ in metrics) or 1.0
-    y = 65
-    for column, label in metrics:
-        draw.text((24, y + 10), label, fill=(0, 0, 0))
-        for idx, experiment in enumerate(("S2 weighted", "S1 weighted")):
-            value = float(rows.loc[rows["experiment"] == experiment, column].iloc[0])
-            width = int(620 * value / max_value)
-            x = 190
-            yy = y + idx * 22
-            color = (80, 130, 210) if idx == 0 else (92, 160, 95)
-            draw.rectangle((x, yy, x + width, yy + 16), fill=color)
-            draw.text((x + width + 8, yy), f"{experiment} {value:.3f}", fill=(0, 0, 0))
-        y += 60
-    canvas.save(FIGURE_DIR / "s1_vs_s2_validation.png")
-
-
 def load_s2_weighted_metrics() -> dict[str, float]:
     rows = pd.read_csv(PROJECT_ROOT / "results" / "s2_deeplab_balanced_sampling" / "validation_comparison.csv")
     row = rows[rows["experiment"] == "weighted_loss"].iloc[0]
@@ -313,48 +180,17 @@ use_test_set: false
     (CONFIG_DIR / "s1_deeplab_weighted.yaml").write_text(text, encoding="utf-8")
 
 
-def write_sar_doc(stats: dict[str, object]) -> None:
-    text = f"""# SAR Preprocessing Recovered from Day 2
-
-Phase 3A inspected only the Day 2 lab notebook sections needed for SAR input handling.
-
-Recovered preprocessing:
-
-- Sentinel-1 channels are `VV` and `VH` in that order.
-- SAR values are terrain-corrected Gamma0 backscatter in dB: `GAMMA0_TERRAIN` with `output_scale = db`.
-- SAR nodata is `-9999`.
-- VV/VH are aligned to the Sentinel-2 B04 grid with bilinear resampling.
-- Masks are aligned to the B04 grid with nearest-neighbour resampling.
-- The SAR-only DeepLab adapter receives a finite `[2, H, W]` tensor in `VV,VH` order.
-- RGB reflectance scaling must not be applied to SAR.
-- SAR CNN inputs are standardized with mean/std fit from valid training pixels only.
-- Day 2 adapts the RGB DeepLab input stem to two channels by repeating the mean RGB stem weights and scaling by `3/2`.
-
-Phase 3A fitted train-only SAR statistics on the fixed split:
-
-- VV mean: `{stats['mean'][0]:.6f}`, std: `{stats['std'][0]:.6f}`
-- VH mean: `{stats['mean'][1]:.6f}`, std: `{stats['std'][1]:.6f}`
-- valid train pixels used per channel: `{stats['valid_pixel_counts']}`
-
-This project keeps the four-class target rather than Day 2's teaching binary target.
-"""
-    (DOCS_DIR / "SAR_PREPROCESSING.md").write_text(text, encoding="utf-8")
-
-
 def train_full() -> dict[str, object]:
     os.environ.setdefault("TORCH_HOME", str(PROJECT_ROOT / ".torch"))
     seed_everything(42)
     RESULT_DIR.mkdir(parents=True, exist_ok=True)
-    FIGURE_DIR.mkdir(exist_ok=True)
     CHECKPOINT_DIR.mkdir(exist_ok=True)
     CONFIG_DIR.mkdir(exist_ok=True)
-    DOCS_DIR.mkdir(exist_ok=True)
     device = torch.device("cuda")
     torch.cuda.reset_peak_memory_stats(device)
     stats = fit_sar_train_statistics(MANIFEST_PATH, project_root=PROJECT_ROOT)
     train_counts, weights = train_class_weights()
     write_config(stats, weights)
-    write_sar_doc(stats)
     smoke = smoke_test(stats, weights, device)
     if not smoke["loss_finite"] or not smoke["cuda_used"]:
         raise RuntimeError(f"Smoke test failed: {smoke}")
@@ -447,17 +283,13 @@ def train_full() -> dict[str, object]:
                 "loss": "inverse-square-root class-weighted CrossEntropyLoss(ignore_index=255)",
                 "model_selection": "validation macro mIoU",
                 "test_evaluated": False,
-                "sar_preprocessing_doc": "docs/SAR_PREPROCESSING.md",
+                "sar_preprocessing_doc": "docs/METHODS.md",
                 "checkpoint": str(checkpoint_path.relative_to(PROJECT_ROOT)),
             },
             indent=2,
         ),
         encoding="utf-8",
     )
-    save_curves(history_frame)
-    save_per_class_iou(validation_metrics)
-    save_qualitative(model, validation_loader, stats, device)
-    save_s1_vs_s2(s1_compare, s2_metrics)
     print(json.dumps(metrics_payload, indent=2))
     return metrics_payload
 

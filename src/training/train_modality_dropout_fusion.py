@@ -9,7 +9,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
-from PIL import Image, ImageDraw
 from torch import nn
 from torch.utils.data import DataLoader
 
@@ -26,15 +25,13 @@ from src.evaluation.robustness_benchmark import (
     stable_int,
 )
 from src.models.deeplab import create_fusion_deeplab
-from src.training.train_fusion_deeplab import save_comparison_figure
+
 from src.training.train_s1_deeplab import binary_metrics_from_loader, prediction_distribution
-from src.training.train_s2_deeplab import class_metrics_frame, run_epoch, seed_everything
+from src.training.train_s2_deeplab import run_epoch, seed_everything
 
 RESULT_DIR = PROJECT_ROOT / "results" / "modality_dropout"
-FIGURE_DIR = PROJECT_ROOT / "figures"
 CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
 CONFIG_DIR = PROJECT_ROOT / "configs"
-DOCS_DIR = PROJECT_ROOT / "docs"
 MANIFEST_PATH = PROJECT_ROOT / "results" / "tile_manifest.csv"
 METRIC_KEYS = ["mean_iou", "macro_dice", "iou_background", "iou_low", "iou_mid", "iou_high", "binary_algae_iou", "binary_algae_dice"]
 
@@ -125,89 +122,10 @@ def load_original_fusion_rows():
     return orig_clean, missing[(missing["model"] == "s1_s2_early_fusion") & (missing["date"] == "all_validation")]
 
 
-def save_bar_figure(rows: pd.DataFrame, path: Path, title: str, metrics: list[tuple[str,str]]):
-    canvas = Image.new("RGB", (980, 520), "white"); draw=ImageDraw.Draw(canvas)
-    draw.text((24,18), title, fill=(0,0,0))
-    exps = rows["experiment"].tolist()
-    colors=[(210,120,50),(80,130,210)]
-    maxv=max(float(rows[m].max()) for m,_ in metrics)
-    y=70
-    for metric,label in metrics:
-        draw.text((24,y+18), label, fill=(0,0,0))
-        for i,exp in enumerate(exps):
-            val=float(rows.loc[rows["experiment"]==exp, metric].iloc[0]); w=int(650*val/max(maxv,1e-6)); yy=y+i*24
-            draw.rectangle((190,yy,190+w,yy+17), fill=colors[i%len(colors)])
-            draw.text((198+w,yy), f"{exp} {val:.3f}", fill=(0,0,0))
-        y += 80
-    canvas.save(path)
-
-
-def save_vs_figure(summary_rows: pd.DataFrame):
-    metrics=[("mean_iou","macro mIoU"),("macro_dice","macro Dice"),("iou_background","IoU 0"),("iou_low","IoU 1"),("iou_mid","IoU 2"),("iou_high","IoU 3"),("binary_algae_dice","binary algae Dice")]
-    save_bar_figure(summary_rows, FIGURE_DIR / "modality_dropout_vs_early_fusion.png", "Original early fusion vs modality-dropout fusion", metrics)
-
-
-def save_missing_figure(rows: pd.DataFrame):
-    canvas=Image.new("RGB", (980,520), "white"); draw=ImageDraw.Draw(canvas)
-    draw.text((24,18), "Clean and missing modality comparison", fill=(0,0,0))
-    conds=["clean","missing_s1_zero","missing_s2_zero"]
-    colors={"original":(210,120,50),"modality_dropout":(80,130,210)}
-    y=70
-    maxv=max(float(rows["mean_iou"].max()), float(rows["binary_algae_dice"].max()))
-    for cond in conds:
-        draw.text((24,y+18), cond, fill=(0,0,0))
-        for j,metric in enumerate(["mean_iou","binary_algae_dice"]):
-            for i,exp in enumerate(["original","modality_dropout"]):
-                val=float(rows[(rows.experiment==exp)&(rows.condition==cond)][metric].iloc[0]); w=int(580*val/max(maxv,1e-6)); yy=y+j*48+i*20
-                draw.rectangle((210,yy,210+w,yy+14), fill=colors[exp])
-                draw.text((218+w,yy-2), f"{exp} {metric} {val:.3f}", fill=(0,0,0))
-        y += 125
-    canvas.save(FIGURE_DIR / "modality_dropout_clean_vs_missing.png")
-
-
-def save_per_class(rows: pd.DataFrame):
-    metrics=[("iou_background","0 bg"),("iou_low","1 low"),("iou_mid","2 mid"),("iou_high","3 high")]
-    clean=rows[rows.condition=="clean"]
-    save_bar_figure(clean, FIGURE_DIR / "modality_dropout_per_class.png", "Clean validation per-class IoU", metrics)
-
-
-def write_doc(payload):
-    doc=f"""# Modality Dropout Experiment
-
-Phase 4B1 trains the existing five-channel early-fusion DeepLab architecture with one training change: deterministic sample-level modality dropout after normalization.
-
-Training probabilities:
-
-- 50% keep S1 + S2
-- 25% zero S1 channels, S2 only
-- 25% zero S2 channels, S1 only
-- 0% drop both modalities
-
-No partial optical occlusion was used during training. No test dates were evaluated.
-
-## Result Summary
-
-- Best epoch: `{payload['best_epoch']}`
-- Training time: `{payload['training_time_seconds']:.1f}` seconds
-- Peak VRAM: `{payload['peak_gpu_memory_mb']:.1f}` MB
-
-Clean macro mIoU changed from `{payload['comparison']['clean']['original_mean_iou']:.4f}` to `{payload['comparison']['clean']['dropout_mean_iou']:.4f}`.
-
-Missing S1 macro mIoU changed from `{payload['comparison']['missing_s1']['original_mean_iou']:.4f}` to `{payload['comparison']['missing_s1']['dropout_mean_iou']:.4f}`.
-
-Missing S2 macro mIoU changed from `{payload['comparison']['missing_s2']['original_mean_iou']:.4f}` to `{payload['comparison']['missing_s2']['dropout_mean_iou']:.4f}`.
-
-## Interpretation
-
-This experiment tests robustness to complete missing modalities only. The optical occlusion benchmark is diagnostic because the model was not trained with partial optical occlusion.
-"""
-    (DOCS_DIR / "MODALITY_DROPOUT_EXPERIMENT.md").write_text(doc, encoding="utf-8")
-
-
 def train_full():
     os.environ.setdefault("TORCH_HOME", str(PROJECT_ROOT / ".torch"))
     seed_everything(42)
-    for d in [RESULT_DIR, FIGURE_DIR, CHECKPOINT_DIR, CONFIG_DIR, DOCS_DIR]: d.mkdir(parents=True, exist_ok=True)
+    for d in [RESULT_DIR, CHECKPOINT_DIR, CONFIG_DIR]: d.mkdir(parents=True, exist_ok=True)
     device=torch.device("cuda"); torch.cuda.reset_peak_memory_stats(device)
     stats=fit_sar_train_statistics(MANIFEST_PATH, project_root=PROJECT_ROOT)
     train_counts, weights=train_class_weights(); write_config(stats, weights)
@@ -253,7 +171,6 @@ def train_full():
     for _,r in missing.iterrows():
         comparison_rows.append({"experiment":"modality_dropout","condition":r.condition, **{k:float(r[k]) for k in METRIC_KEYS}})
     comp=pd.DataFrame(comparison_rows)
-    save_missing_figure(comp); save_per_class(comp); save_vs_figure(comp[comp.condition=="clean"])
 
     def val(exp, cond, metric): return float(comp[(comp.experiment==exp)&(comp.condition==cond)][metric].iloc[0])
     payload={
@@ -267,9 +184,7 @@ def train_full():
         "comparison_rows":comp.to_dict(orient="records"),
     }
     (RESULT_DIR / "summary.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    write_doc(payload)
     print(json.dumps(payload["comparison"], indent=2))
 
 if __name__ == "__main__":
     train_full()
-

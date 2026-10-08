@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - name: Compile Python and run existing pure path assertions
+      - name: Compile sources and check paths, splits and saved evidence
         run: python scripts/check_lightweight.py
       - name: Verify presentation and static-only artifact
         run: python scripts/check_presentation.py

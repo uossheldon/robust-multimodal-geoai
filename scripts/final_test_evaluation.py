@@ -7,7 +7,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import torch
-from PIL import Image, ImageDraw
 from torch.utils.data import DataLoader
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -21,13 +20,11 @@ from src.evaluation.segmentation import confusion_matrix, segmentation_metrics
 from src.evaluation.robustness_benchmark import OCCLUSION_FRACTIONS, SEEDS as CORRUPTION_SEEDS, apply_optical_occlusion, METRIC_KEYS, binary_metrics
 from src.models.deeplab import create_s2_deeplab, create_sar_deeplab, create_fusion_deeplab
 from src.models.terramind_segmentation import TerraMindFrozenSegmenter
-from src.training.train_s1_deeplab import color_mask, stretch_channel
+
 
 MANIFEST_PATH = PROJECT_ROOT / 'results' / 'tile_manifest.csv'
 CHECKPOINT_DIR = PROJECT_ROOT / 'checkpoints'
 RESULT_DIR = PROJECT_ROOT / 'results' / 'final_test'
-FIGURE_DIR = PROJECT_ROOT / 'figures'
-DOCS_DIR = PROJECT_ROOT / 'docs'
 TEST_DATES = ['2025-09-08', '2025-09-21']
 BATCH_SIZE = 4
 
@@ -165,63 +162,9 @@ def aggregate(rows):
     return pd.DataFrame(out)
 
 
-def save_figures(clean_summary, robust_rows, per_date):
-    FIGURE_DIR.mkdir(exist_ok=True)
-    # clean comparison
-    canvas=Image.new('RGB',(1100,560),'white'); draw=ImageDraw.Draw(canvas)
-    draw.text((24,18),'Final held-out clean test comparison',fill=(0,0,0))
-    y=70
-    for row in clean_summary.sort_values('mean_iou_mean', ascending=False).itertuples(index=False):
-        v=float(row.mean_iou_mean); w=int(v*700)
-        draw.text((24,y+8), f'{row.model} ({row.n} run{"s" if row.n!=1 else ""})', fill=(0,0,0))
-        draw.rectangle((330,y,330+w,y+24), fill=(80,130,210))
-        std='' if pd.isna(row.mean_iou_std) else f' ± {row.mean_iou_std:.3f}'
-        draw.text((1040-170,y+6), f'{v:.3f}{std}', fill=(0,0,0))
-        y+=42
-    canvas.save(FIGURE_DIR/'final_clean_model_comparison.png')
-    # per class
-    canvas=Image.new('RGB',(1100,680),'white'); draw=ImageDraw.Draw(canvas); draw.text((24,18),'Final test per-class IoU',fill=(0,0,0))
-    y=70
-    for row in clean_summary.itertuples(index=False):
-        draw.text((24,y), row.model, fill=(0,0,0)); x=260
-        for col,label in [('iou_background_mean','0'),('iou_low_mean','1'),('iou_mid_mean','2'),('iou_high_mean','3')]:
-            v=float(getattr(row,col)); h=int(v*160)
-            draw.rectangle((x,y+28+160-h,x+35,y+188), fill=(90,160,90)); draw.text((x,y+194),f'{label}:{v:.2f}',fill=(0,0,0)); x+=75
-        y+=92
-    canvas.save(FIGURE_DIR/'final_per_class_iou.png')
-    # robustness curves
-    rob=pd.DataFrame(robust_rows)
-    canvas=Image.new('RGB',(980,560),'white'); draw=ImageDraw.Draw(canvas); draw.text((24,18),'Final test robustness curves: macro mIoU',fill=(0,0,0))
-    x0,y0,w,h=90,80,760,360; draw.rectangle((x0,y0,x0+w,y0+h), outline=(0,0,0))
-    colors={'modality_dropout':(80,130,210),'occlusion_trained':(210,100,80)}
-    for model,color in colors.items():
-        pts=[]
-        for i,frac in enumerate(OCCLUSION_FRACTIONS):
-            cond='clean' if frac==0 else f'occlusion_{int(frac*100)}'
-            sub=rob[(rob.model==model)&(rob.condition==cond)&(rob.date=='all_test')]
-            if len(sub):
-                val=sub['mean_iou'].mean(); x=x0+int(i*w/(len(OCCLUSION_FRACTIONS)-1)); y=y0+h-int(val*h/0.4); pts.append((x,y))
-        if len(pts)>1: draw.line(pts, fill=color, width=3)
-        if pts: draw.text((pts[-1][0]+8, pts[-1][1]), model, fill=color)
-    for i,frac in enumerate(OCCLUSION_FRACTIONS):
-        x=x0+int(i*w/(len(OCCLUSION_FRACTIONS)-1)); draw.text((x-10,y0+h+10),f'{int(frac*100)}%',fill=(0,0,0))
-    canvas.save(FIGURE_DIR/'final_robustness_curves.png')
-    # qualitative placeholder from first rows not predictions to avoid rerun
-    canvas=Image.new('RGB',(900,240),'white'); draw=ImageDraw.Draw(canvas)
-    draw.text((24,24),'Qualitative test examples generated from final models are not embedded here.',fill=(0,0,0))
-    draw.text((24,60),'See final CSV metrics for held-out test behavior by date and model.',fill=(0,0,0))
-    canvas.save(FIGURE_DIR/'final_qualitative_test_examples.png')
-
-
-def write_doc(clean, robust_summary, per_date, audit_info):
-    DOCS_DIR.mkdir(exist_ok=True)
-    lines=['# Final Held-Out Test Results','', 'Phase 7: final comparison after model development was frozen. Earlier Phase 2D TEST access is preserved; no post-Phase-7 tuning or checkpoint selection occurred.','', '## Audit','', f"Test dates: {', '.join(TEST_DATES)}", f"Test tiles: {audit_info['test_tile_count']}", '', '## Clean test summary','', clean.to_markdown(index=False), '', '## Robustness test summary', '', robust_summary.to_markdown(index=False), '', '## Per-date behavior', '', per_date.to_markdown(index=False), '']
-    (DOCS_DIR/'FINAL_TEST_RESULTS.md').write_text('\n'.join(lines), encoding='utf-8')
-
-
 def main():
     os.environ.setdefault('TORCH_HOME', str(PROJECT_ROOT/'.torch'))
-    RESULT_DIR.mkdir(parents=True, exist_ok=True); FIGURE_DIR.mkdir(exist_ok=True)
+    RESULT_DIR.mkdir(parents=True, exist_ok=True)
     audit_info=audit()
     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     loaders=make_loaders()
@@ -263,10 +206,8 @@ def main():
     clean_summary.to_csv(RESULT_DIR/'clean_test_results.csv', index=False)
     robust_df.to_csv(RESULT_DIR/'robustness_test_results.csv', index=False)
     per_date_df.to_csv(RESULT_DIR/'per_date_test_results.csv', index=False)
-    summary={'audit':audit_info,'device':str(device),'runtime_seconds':time.perf_counter()-start,'clean_summary':clean_summary.to_dict(orient='records'),'robustness_summary':robust_summary.to_dict(orient='records'),'post_test_tuning':False}
+    summary={'audit':audit_info,'device':str(device),'runtime_seconds':time.perf_counter()-start,'robustness_summary':robust_summary.to_dict(orient='records'),'post_test_tuning':False}
     (RESULT_DIR/'final_summary.json').write_text(json.dumps(summary, indent=2), encoding='utf-8')
-    save_figures(clean_summary, robust_df, per_date_df)
-    write_doc(clean_summary, robust_summary, per_date_df, audit_info)
     print(json.dumps(summary, indent=2))
 
 if __name__=='__main__':

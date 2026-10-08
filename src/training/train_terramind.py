@@ -10,7 +10,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
-from PIL import Image, ImageDraw
 from torch import nn
 from torch.utils.data import DataLoader
 
@@ -20,14 +19,12 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from src.data.terramind_dataset import TerraMindMultimodalDataset, default_terramind_data_root, terramind_collate
 from src.evaluation.segmentation import confusion_matrix, segmentation_metrics
 from src.models.terramind_segmentation import create_terramind_frozen_segmenter
-from src.training.train_s1_deeplab import color_mask, stretch_channel
+
 from src.training.train_s2_deeplab import class_metrics_frame
 
 MANIFEST_PATH = PROJECT_ROOT / "results" / "tile_manifest.csv"
 RESULT_DIR = PROJECT_ROOT / "results" / "terramind_frozen"
-FIGURE_DIR = PROJECT_ROOT / "figures"
 CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
-CLASS_COLORS = {0: (40, 40, 40), 1: (121, 190, 85), 2: (247, 188, 65), 3: (218, 83, 63), 255: (210, 210, 210)}
 EXPECTED_SPLIT_COUNTS = {"train": 621, "validation": 111}
 TEST_DATES = {"2025-09-08", "2025-09-21"}
 SELECTED_DEEPLAB_CLASS_WEIGHTS = {
@@ -51,7 +48,7 @@ def seed_everything(seed: int) -> None:
 def train_class_weights() -> tuple[dict[str, int], dict[str, float]]:
     """Return train counts plus the locked DeepLab selected class weights.
 
-    The Phase 6C protocol requires using the same inverse-square-root weights
+    The frozen-backbone protocol requires using the same inverse-square-root weights
     selected for the weighted DeepLab experiments, not recomputing a new scheme.
     Counts are recorded only for audit metadata.
     """
@@ -184,92 +181,6 @@ def smoke_test(model: nn.Module, loader: DataLoader, criterion: nn.Module, devic
         "decoder_received_gradients": bool(decoder_has_grad),
     }
 
-def save_curves(history: pd.DataFrame) -> None:
-    canvas = Image.new("RGB", (900, 360), "white")
-    draw = ImageDraw.Draw(canvas)
-    draw.text((24, 16), "Frozen TerraMind training curves", fill=(0, 0, 0))
-    panels = [("Loss", "train_loss", "validation_loss", 50, 70), ("Validation macro mIoU", None, "validation_mean_iou", 500, 70)]
-    for title, train_col, val_col, x0, y0 in panels:
-        draw.text((x0, y0 - 28), title, fill=(0, 0, 0))
-        draw.rectangle((x0, y0, x0 + 330, y0 + 220), outline=(0, 0, 0))
-        values = []
-        if train_col:
-            values.extend(history[train_col].tolist())
-        values.extend(history[val_col].tolist())
-        lo, hi = min(values), max(values)
-        if hi <= lo:
-            hi = lo + 1
-        def pts(column: str) -> list[tuple[int, int]]:
-            series = history[column].tolist()
-            return [(x0 + int(idx * 330 / max(1, len(series) - 1)), y0 + 220 - int((value - lo) * 220 / (hi - lo))) for idx, value in enumerate(series)]
-        if train_col:
-            draw.line(pts(train_col), fill=(70, 120, 210), width=3)
-            draw.text((x0, y0 + 232), "train", fill=(70, 120, 210))
-        draw.line(pts(val_col), fill=(210, 80, 80), width=3)
-        draw.text((x0 + 90, y0 + 232), "validation", fill=(210, 80, 80))
-    canvas.save(FIGURE_DIR / "terramind_training_curves.png")
-
-
-def save_per_class_iou(metrics: dict[str, float]) -> None:
-    frame = class_metrics_frame(metrics)
-    canvas = Image.new("RGB", (760, 360), "white")
-    draw = ImageDraw.Draw(canvas)
-    draw.text((24, 18), "TerraMind validation per-class IoU", fill=(0, 0, 0))
-    max_iou = max(float(frame["iou"].max()), 1e-6)
-    for idx, row in enumerate(frame.itertuples(index=False)):
-        y = 70 + idx * 64
-        width = int(500 * float(row.iou) / max_iou)
-        draw.text((24, y + 12), str(row.class_name), fill=(0, 0, 0))
-        draw.rectangle((170, y, 170 + width, y + 42), fill=CLASS_COLORS[int(row.class_id)])
-        draw.text((182 + width, y + 12), f"{row.iou:.3f}", fill=(0, 0, 0))
-    canvas.save(FIGURE_DIR / "terramind_per_class_iou.png")
-
-
-def rgb_for_display(rgb_bgr_255: torch.Tensor) -> np.ndarray:
-    rgb = (rgb_bgr_255[[2, 1, 0]].cpu().float() / 255.0).clamp(0, 1).numpy()
-    return (np.transpose(rgb, (1, 2, 0)) * 255).astype(np.uint8)
-
-
-def sar_for_display(s1rtc: torch.Tensor) -> tuple[np.ndarray, np.ndarray]:
-    mean = torch.tensor([-10.930, -17.329]).view(2, 1, 1)
-    std = torch.tensor([4.391, 4.459]).view(2, 1, 1)
-    raw = s1rtc.cpu().float() * std + mean
-    vv = np.repeat(stretch_channel(raw[0])[:, :, None], 3, axis=2)
-    vh = np.repeat(stretch_channel(raw[1])[:, :, None], 3, axis=2)
-    return vv, vh
-
-
-def save_qualitative(model: nn.Module, loader: DataLoader, device: torch.device, max_examples: int = 4) -> None:
-    model.eval()
-    examples = []
-    with torch.inference_mode(), torch.amp.autocast("cuda", enabled=device.type == "cuda"):
-        for inputs, targets in loader:
-            device_inputs, _ = to_device(inputs, targets, device)
-            predictions = model(device_inputs)["out"].argmax(dim=1).cpu()
-            for idx, (target, prediction) in enumerate(zip(targets, predictions)):
-                valid = target != 255
-                error = torch.full_like(target, 255)
-                error[valid & (prediction == target)] = 0
-                error[valid & (prediction != target)] = 3
-                vv, vh = sar_for_display(inputs["S1RTC"][idx])
-                examples.append((rgb_for_display(inputs["RGB"][idx]), vv, vh, color_mask(target.numpy()), color_mask(prediction.numpy()), color_mask(error.numpy())))
-                if len(examples) >= max_examples:
-                    break
-            if len(examples) >= max_examples:
-                break
-    tile = 224
-    label_h = 28
-    canvas = Image.new("RGB", (tile * 6, (tile + label_h) * len(examples)), "white")
-    draw = ImageDraw.Draw(canvas)
-    labels = ["RGB", "VV", "VH", "Ground Truth", "TerraMind Prediction", "Error Map"]
-    for row, example in enumerate(examples):
-        y = row * (tile + label_h)
-        for col, array in enumerate(example):
-            x = col * tile
-            draw.text((x + 8, y + 7), labels[col], fill=(0, 0, 0))
-            canvas.paste(Image.fromarray(array), (x, y + label_h))
-    canvas.save(FIGURE_DIR / "terramind_qualitative_predictions.png")
-
 
 def load_existing_comparisons() -> pd.DataFrame:
     rows = []
@@ -313,30 +224,6 @@ def load_existing_comparisons() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def save_comparison_figure(comparison: pd.DataFrame) -> None:
-    if comparison.empty or "mean_iou" not in comparison.columns:
-        return
-    canvas = Image.new("RGB", (1160, 560), "white")
-    draw = ImageDraw.Draw(canvas)
-    draw.text((24, 18), "TerraMind vs DeepLab validation comparison", fill=(0, 0, 0))
-    metrics = [("mean_iou", "macro mIoU"), ("macro_dice", "macro Dice"), ("iou_background", "IoU 0"), ("iou_low", "IoU 1"), ("iou_mid", "IoU 2"), ("iou_high", "IoU 3")]
-    maxv = max(float(comparison[col].max()) for col, _ in metrics if col in comparison.columns)
-    y = 60
-    palette = [(80, 130, 210), (92, 160, 95), (210, 120, 50), (155, 95, 180), (210, 80, 80), (80, 80, 80)]
-    for col, label in metrics:
-        if col not in comparison.columns:
-            continue
-        draw.text((24, y + 18), label, fill=(0, 0, 0))
-        for idx, row in enumerate(comparison.itertuples(index=False)):
-            value = float(getattr(row, col))
-            width = int(650 * value / max(maxv, 1e-6))
-            yy = y + idx * 18
-            draw.rectangle((165, yy, 165 + width, yy + 12), fill=palette[idx % len(palette)])
-            draw.text((175 + width, yy - 3), f"{row.experiment} {value:.3f}", fill=(0, 0, 0))
-        y += 105
-    canvas.save(FIGURE_DIR / "terramind_vs_deeplab_validation.png")
-
-
 def evaluate_for_binary_metrics(model: nn.Module, loader: DataLoader, device: torch.device) -> dict[str, float]:
     conf = torch.zeros((2, 2), dtype=torch.int64, device=device)
     model.eval()
@@ -361,7 +248,7 @@ def evaluate_for_binary_metrics(model: nn.Module, loader: DataLoader, device: to
 def train_full(batch_size: int = 4, epochs: int = 10, seed: int = 42, use_class_weights: bool = True, data_root: str | Path | None = None) -> dict[str, object]:
     os.environ.setdefault("TORCH_HOME", str(PROJECT_ROOT / ".torch"))
     seed_everything(seed)
-    for directory in (RESULT_DIR, FIGURE_DIR, CHECKPOINT_DIR):
+    for directory in (RESULT_DIR, CHECKPOINT_DIR):
         directory.mkdir(parents=True, exist_ok=True)
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA is required for the TerraMind benchmark run.")
@@ -439,10 +326,6 @@ def train_full(batch_size: int = 4, epochs: int = 10, seed: int = 42, use_class_
     comparison = pd.concat([existing, pd.DataFrame([comparison_row])], ignore_index=True)
     comparison.to_csv(RESULT_DIR / "validation_comparison.csv", index=False)
 
-    save_curves(history_frame)
-    save_per_class_iou(validation_metrics)
-    save_qualitative(model, validation_loader, device)
-    save_comparison_figure(comparison)
 
     payload = {
         "training_time_seconds": training_time,
@@ -480,9 +363,3 @@ def train_full(batch_size: int = 4, epochs: int = 10, seed: int = 42, use_class_
 
 if __name__ == "__main__":
     train_full()
-
-
-
-
-
-

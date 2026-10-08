@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path, PurePath
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -22,20 +22,7 @@ def default_terramind_data_root(project_root: str | Path) -> Path:
     return Path(project_root) / "data" / "raw" / "SummerSchool_Subset"
 
 
-def resolve_terramind_paths(data_root: str | Path, date: str) -> dict[str, Path]:
-    """Resolve SummerSchool_Subset paths independently of manifest path separators."""
-    root = data_root if isinstance(data_root, PurePath) else Path(data_root)
-    safe_date = str(date)
-    mask_date = safe_date.replace("-", "_")
-    layer_dir = root / "images" / safe_date / "layers"
-    return {
-        "B02": layer_dir / f"{safe_date}_B02.tif",
-        "B03": layer_dir / f"{safe_date}_B03.tif",
-        "B04": layer_dir / f"{safe_date}_B04.tif",
-        "VV": layer_dir / f"{safe_date}_VV.tif",
-        "VH": layer_dir / f"{safe_date}_VH.tif",
-        "mask": root / "masks" / f"{mask_date}.tiff",
-    }
+from src.data.paths import resolve_terramind_paths
 
 
 def _same_grid(src: rasterio.io.DatasetReader, reference: rasterio.io.DatasetReader) -> bool:
@@ -161,4 +148,3 @@ def terramind_collate(batch: list[tuple[dict[str, torch.Tensor], torch.Tensor]])
         inputs["S1RTC"].append(sample_inputs["S1RTC"])
         targets.append(target)
     return {key: torch.stack(value, dim=0) for key, value in inputs.items()}, torch.stack(targets, dim=0)
-

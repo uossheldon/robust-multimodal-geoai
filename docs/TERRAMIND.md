@@ -16,9 +16,9 @@ The decoder reshapes the final token output to a 14×14 feature map and upsample
 
 ## Preprocessing
 
-RGB uses B04/B03/B02, scaled to reflectance, clipped to [0,1], reordered for the TerraMind input convention and scaled to 0–255.
+RGB uses B04/B03/B02, divided by 10000, clipped to [0,1], reordered RGB → BGR and multiplied by 255.
 
-Sentinel-1 uses VV/VH GAMMA0_TERRAIN backscatter in dB. Invalid SAR values are excluded from the target mask and filled with the model normalization mean before normalization.
+Sentinel-1 uses VV/VH GAMMA0_TERRAIN backscatter in dB. Invalid SAR values are excluded from the target mask and filled with the model normalization mean before normalization: mean [-10.930, -17.329], standard deviation [4.391, 4.459].
 
 ## Training
 
@@ -53,9 +53,7 @@ Each run uses:
 
 The machine-readable record is [terramind_validation.json](../results/terramind_validation.json).
 
-![TerraMind validation summary](../figures/terramind_reproducibility.png)
-
-![Three-seed validation comparison](../figures/terramind_vs_robust_deeplab.png)
+![TerraMind validation summary](../figures/terramind_validation.svg)
 
 ## Final test
 

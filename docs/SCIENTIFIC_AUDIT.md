@@ -6,6 +6,8 @@ This document records the qualifications needed to interpret the reported result
 
 An earlier exploratory unweighted Sentinel-2 run was evaluated on the test dates before the final comparison. Later model development and checkpoint selection used validation data, and no tuning or checkpoint selection was performed after the final frozen comparison.
 
+The earlier unweighted optical test result (macro mIoU 0.157647; macro Dice 0.225141) remains in [test_metrics.json](../results/s2_deeplab/test_metrics.json).
+
 The September test set is therefore useful as a fixed temporal benchmark, but it should not be described as a pristine first-touch holdout.
 
 ## Evaluation support

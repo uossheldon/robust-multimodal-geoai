@@ -30,3 +30,5 @@ The repository does not redistribute source rasters, original masks, the prepare
 Comparable Sentinel imagery can be obtained independently from public Earth-observation sources, but exact reproduction also requires the original prepared labels and source-specific preprocessing choices. Those labels are not reconstructable from the public Sentinel imagery alone.
 
 See [Reproduction](REPRODUCTION.md) for the supported public workflow.
+
+Public code and aggregate results do not grant redistribution rights to the prepared dataset or labels. Their redistribution terms remain unresolved; no software or data license is added by this repository.

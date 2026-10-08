@@ -29,7 +29,7 @@ Mean entropy rises from clean to severe optical occlusion for the occlusion-trai
 
 ## Risk–coverage and limits
 
-Risk–coverage curves remove the highest-entropy pixels and measure the error rate among retained valid pixels. Saved curves/areas are in [risk_coverage.csv](../results/uncertainty/risk_coverage.csv) and [error_detection.csv](../results/uncertainty/error_detection.csv). Lower risk area is preferable, but these exploratory curves do not select an abstention threshold or demonstrate a dependable deployment safeguard. Conditions show different behaviour; failure detection is limited, not solved.
+Risk–coverage curves remove the highest-entropy pixels and measure the error rate among retained valid pixels. Saved curves/areas are in [risk_coverage.csv](../results/uncertainty/risk_coverage.csv) and [per_seed_metrics.csv](../results/uncertainty/per_seed_metrics.csv). Lower risk area is preferable, but these exploratory curves do not select an abstention threshold or demonstrate a dependable deployment safeguard. Conditions show different behaviour; failure detection is limited, not solved.
 
 
 ## Three-model probability ensemble
@@ -72,6 +72,4 @@ Ensemble predictive entropy increases from 0.6978 clean to 0.7844 at 70% occlusi
 
 See [metrics.csv](../results/ensemble_uncertainty/metrics.csv), [risk_coverage.csv](../results/ensemble_uncertainty/risk_coverage.csv), and the [scientific audit](SCIENTIFIC_AUDIT.md). The project reports uncertainty diagnostics as secondary evidence, not a solution to reliable failure detection.
 
-![Ensemble calibration comparison](../figures/ensemble_vs_single_calibration.png)
-
-![Ensemble error detection](../figures/ensemble_error_detection.png)
+![Ensemble calibration comparison](../figures/ensemble_diagnostics.svg)

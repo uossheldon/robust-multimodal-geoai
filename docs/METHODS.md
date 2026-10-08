@@ -20,7 +20,7 @@ Rasterio uses B04 as the reference grid (EPSG:32629). B03/B02 are read directly 
 
 Full 224×224 non-overlapping pixel windows are retained at a minimum 20% common valid-pixel ratio. Optical nodata, SAR nodata/non-finite values and label 255 are excluded for manifest eligibility. Coordinates, validity, class counts and source references are recorded; datasets read rasters on demand without duplicated tile caches. [Per-date statistics](../results/per_date_statistics.csv) retain the complete inventory.
 
-Runtime scoring support is model-specific: S2 uses aligned label validity, while SAR/fusion/TerraMind additionally ignore invalid SAR targets. Manifest eligibility counts are not each model's scoring denominator; see [scientific audit](SCIENTIFIC_AUDIT.md#valid-pixel-comparability).
+Runtime scoring support is model-specific: S2 uses aligned label validity, while SAR/fusion/TerraMind additionally ignore invalid SAR targets. Manifest eligibility counts are not each model's scoring denominator; see [scientific audit](SCIENTIFIC_AUDIT.md#evaluation-support).
 
 ## Sentinel-2 preprocessing
 
@@ -77,7 +77,5 @@ Confusion counts exclude label 255. Per-class IoU is TP/(TP+FP+FN); Dice is 2TP/
 
 Final clean/missing-sensor uncertainty bars use sample SD across three training seeds. Final optical-occlusion bars pool nine training-seed × corruption-seed runs. These SDs describe different populations, not confidence intervals. [Final results](FINAL_TEST_RESULTS.md) and [scientific audit](SCIENTIFIC_AUDIT.md) preserve earlier TEST access and unequal scoring support.
 
-![Class distribution by date](../figures/class_distribution_by_date.png)
-![Validation imbalance comparison](../figures/s2_imbalance_methods_comparison.png)
-
-![Validation robustness across methods](../figures/robust_methods_comparison.png)
+![Class distribution by date](../figures/class_distribution_by_date.svg)
+![Validation imbalance comparison](../figures/s2_imbalance_methods_comparison.svg)
